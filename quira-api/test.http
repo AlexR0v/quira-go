@@ -1,0 +1,13 @@
+GET http://localhost:3000/api
+Accept: application/json
+
+###
+
+POST https://localhost:9000/auth/sign-in
+Accept: application/json
+
+{
+    "email": "test",
+    "password": "test"
+}
+###

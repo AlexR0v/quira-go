@@ -23,5 +23,12 @@ func validEmail(email string) bool {
 }
 
 func (s *Service) GetAllUsers() ([]User, error) {
-	return s.userRepo.FindAllUsers()
+	users, err := s.userRepo.FindAllUsers()
+	if err != nil {
+		return nil, err
+	}
+	for _, user := range users {
+		user.Password = "******"
+	}
+	return users, nil
 }

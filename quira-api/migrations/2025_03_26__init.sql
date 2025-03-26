@@ -13,7 +13,7 @@ values (
         'admin',
         'admin',
         'admin@admin.com',
-        '$2a$10$JuL4w0R.8sq9jqx7Pa49xeqmkmQIEG2QPVKQxsRQkk83XFOvdRo1W',
+        '$2a$10$3eeeFDuRNY2fh.y2TS92lu2oHb1.7otZvrAdbzEa460/BwtIFVVYS',
         'ROLE_ADMIN'
        )
 ON CONFLICT DO NOTHING

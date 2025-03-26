@@ -6,7 +6,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	
+	"quira-api/internal/user"
+	"quira-api/pkg/db"
+
 	"quira-api/internal/auth"
 	"quira-api/internal/home"
 	"quira-api/internal/pages"
@@ -19,16 +21,30 @@ func main() {
 	env := config.LoadEnv()
 	app := fiber.New()
 	log := logger.NewLogger(&env.Log)
-	
+
+	// DB
+	dbPool := db.CreateDBPool(&env.DB, log)
+	defer dbPool.Close()
+
+	// Middlewares
 	app.Use(cors.New(corsapp.SetCors()))
 	app.Use(fiberzerolog.New(fiberzerolog.Config{Logger: log}))
 	app.Use(recover.New())
 	app.Use(favicon.New())
-	
-	auth.NewHandler(app, log)
+
+	// Repositories
+	userRepo := user.NewRepository(dbPool, log)
+
+	// Services
+	authService := auth.NewService(userRepo, log)
+	userService := user.NewService(userRepo, log)
+
+	// Handlers
+	auth.NewHandler(app, log, authService)
+	user.NewHandler(app, log, userService)
 	home.NewHandler(app, log)
 	pages.NewHandler(app, log)
-	
+
 	err := app.Listen(":9000")
 	if err != nil {
 		log.Fatal().Msg(err.Error())

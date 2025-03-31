@@ -3,6 +3,7 @@ package user
 import (
 	"github.com/rs/zerolog"
 	"net/mail"
+	apperr "quira-api/pkg/app-err"
 )
 
 type Service struct {
@@ -25,7 +26,7 @@ func validEmail(email string) bool {
 func (s *Service) GetAllUsers() ([]User, error) {
 	users, err := s.userRepo.FindAllUsers()
 	if err != nil {
-		return nil, err
+		return nil, apperr.NewError(apperr.InternalServerError, err)
 	}
 	for _, user := range users {
 		user.Password = "******"

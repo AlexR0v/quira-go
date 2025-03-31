@@ -1,11 +1,11 @@
 package auth
 
 import (
-	"errors"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 	"net/mail"
 	"quira-api/internal/user"
+	"quira-api/pkg/app-err"
 )
 
 type Service struct {
@@ -27,18 +27,18 @@ func validEmail(email string) bool {
 
 func (s *Service) Login(loginInput *LoginInput) (string, error) {
 	if !validEmail(loginInput.Email) {
-		return "", errors.New("invalid email")
+		return "", app_err.NewError(app_err.InvalidEmail, app_err.InvalidEmail)
 	}
 
 	existedUser, err := s.userRepo.FindUserByEmail(loginInput.Email)
 	if err != nil {
-		return "", errors.New("login or password incorrect")
+		return "", app_err.NewError(app_err.LoginOrPasswordIncorrect, err)
 	}
 
 	password := []byte(loginInput.Password)
 	err = bcrypt.CompareHashAndPassword([]byte(existedUser.Password), password)
 	if err != nil {
-		return "", errors.New("login or password incorrect")
+		return "", app_err.NewError(app_err.LoginOrPasswordIncorrect, err)
 	}
 
 	return "test", nil
@@ -46,13 +46,13 @@ func (s *Service) Login(loginInput *LoginInput) (string, error) {
 
 func (s *Service) Register(registerInput *RegisterInput) (string, error) {
 	if !validEmail(registerInput.Email) {
-		return "", errors.New("invalid email")
+		return "", app_err.NewError(app_err.InvalidEmail, app_err.InvalidEmail)
 	}
 
-	userExist, _ := s.userRepo.FindUserByEmail(registerInput.Email)
+	userExist, err := s.userRepo.FindUserByEmail(registerInput.Email)
 
 	if userExist.Email != "" {
-		return "", errors.New("user already exists")
+		return "", app_err.NewError(app_err.UserExists, err)
 	}
 
 	password, bcryptErr := bcrypt.GenerateFromPassword([]byte(registerInput.Password), bcrypt.DefaultCost)
@@ -68,9 +68,9 @@ func (s *Service) Register(registerInput *RegisterInput) (string, error) {
 		LastName:  registerInput.LastName,
 	}
 
-	_, err := s.userRepo.CreateUser(newUser)
+	_, err = s.userRepo.CreateUser(newUser)
 	if err != nil {
-		return "", err
+		return "", app_err.NewError(app_err.BadRequest, err)
 	}
 
 	return "test", nil

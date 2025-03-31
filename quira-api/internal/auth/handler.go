@@ -2,6 +2,8 @@ package auth
 
 import (
 	"net/mail"
+	apperr "quira-api/pkg/app-err"
+	appresponse "quira-api/pkg/app-response"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
@@ -27,75 +29,31 @@ func NewHandler(router fiber.Router, log *zerolog.Logger, service *Service) {
 func (h *Handler) SignIn(c *fiber.Ctx) error {
 	input := new(LoginInput)
 	if err := c.BodyParser(input); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"status":  "error",
-				"message": "Error on login request",
-				"errors":  err.Error(),
-			},
-		)
+		return apperr.FiberError(c, apperr.NewError(apperr.BadRequest, err))
 	}
 	if _, err := mail.ParseAddress(input.Email); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"status":  "error",
-				"message": "Error on login request",
-				"errors":  err.Error(),
-			},
-		)
+		return apperr.FiberError(c, err)
 	}
 	token, err := h.service.Login(input)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"status":  "error",
-				"message": err.Error(),
-				"errors":  err.Error(),
-			},
-		)
+		return apperr.FiberError(c, err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status":  "success",
-		"message": "User logged in successfully",
-		"token":   token,
-	})
+	return appresponse.FiberResponse(c, fiber.StatusOK, "User logged in successfully", token)
 }
 
 func (h *Handler) SignUp(c *fiber.Ctx) error {
 	input := new(RegisterInput)
 	if err := c.BodyParser(input); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"status":  "error",
-				"message": "Error on login request",
-				"errors":  err.Error(),
-			},
-		)
+		return apperr.FiberError(c, err)
 	}
 	if _, err := mail.ParseAddress(input.Email); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"status":  "error",
-				"message": "Error on login request",
-				"errors":  err.Error(),
-			},
-		)
+		return apperr.FiberError(c, err)
 	}
 	token, err := h.service.Register(input)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"status":  "error",
-				"message": err.Error(),
-				"errors":  err.Error(),
-			},
-		)
+		return apperr.FiberError(c, err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"status":  "success",
-		"message": "User registered in successfully",
-		"token":   token,
-	})
+	return appresponse.FiberResponse(c, fiber.StatusOK, "User registered in successfully", token)
 }

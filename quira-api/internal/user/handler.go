@@ -3,7 +3,7 @@ package user
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
-	app_err "quira-api/pkg/app-err"
+	apperr "quira-api/pkg/app-err"
 	appresponse "quira-api/pkg/app-response"
 )
 
@@ -20,13 +20,25 @@ func NewHandler(router fiber.Router, log *zerolog.Logger, service *Service) {
 		service: service,
 	}
 	api := h.router.Group("/users")
-	api.Get("/getAll", h.GetAllUsers)
+	api.Get("/", h.GetAllUsers)
+	api.Get("/:id", h.GetUserById)
 }
 
 func (h *Handler) GetAllUsers(c *fiber.Ctx) error {
-	users, err := h.service.GetAllUsers()
+	size := c.QueryInt("size", 2)
+	page := c.QueryInt("page", 1)
+	users, err := h.service.GetAllUsers(size, (page-1)*size)
 	if err != nil {
-		return app_err.FiberError(c, err)
+		return apperr.FiberError(c, err)
 	}
-	return appresponse.FiberResponse(c, fiber.StatusOK, "User registered in successfully", users)
+	return appresponse.FiberResponse(c, fiber.StatusOK, "Users list", users)
+}
+
+func (h *Handler) GetUserById(c *fiber.Ctx) error {
+	id := c.Params("id")
+	userResponse, err := h.service.GetUserById(id)
+	if err != nil {
+		return apperr.FiberError(c, err)
+	}
+	return appresponse.FiberResponse(c, fiber.StatusOK, "User by id found", userResponse)
 }

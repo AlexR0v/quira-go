@@ -23,13 +23,28 @@ func validEmail(email string) bool {
 	return err == nil
 }
 
-func (s *Service) GetAllUsers() ([]User, error) {
-	users, err := s.userRepo.FindAllUsers()
+func (s *Service) GetAllUsers(limit, offset int) (*Response, error) {
+	users, countUsers, err := s.userRepo.FindAllUsers(limit, offset)
 	if err != nil {
 		return nil, apperr.NewError(apperr.InternalServerError, err)
 	}
+	var usersResponses []*ResponseUser
 	for _, user := range users {
-		user.Password = "******"
+		usersResponses = append(usersResponses, mapUser(user))
 	}
-	return users, nil
+	res := &Response{
+		Users:      usersResponses,
+		TotalCount: countUsers,
+	}
+	return res, nil
+}
+
+func (s *Service) GetUserById(id string) (*ResponseUser, error) {
+	userApp, err := s.userRepo.FindUserById(id)
+	if err != nil {
+		return nil, apperr.NewError(apperr.NotFound, err)
+	}
+	usersResponses := mapUser(userApp)
+
+	return usersResponses, nil
 }

@@ -20,6 +20,8 @@ func FromError(err error) HttpError {
 		switch {
 		case errors.Is(srvErr, InvalidEmail):
 			apiErr.Status = http.StatusBadRequest
+		case errors.Is(srvErr, Unauthorized):
+			apiErr.Status = http.StatusUnauthorized
 		case errors.Is(srvErr, InvalidPassword):
 			apiErr.Status = http.StatusBadRequest
 		case errors.Is(srvErr, LoginOrPasswordIncorrect):

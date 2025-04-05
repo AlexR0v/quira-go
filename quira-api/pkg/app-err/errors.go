@@ -12,6 +12,7 @@ var (
 	NotFound                 = errors.New("not found")
 	InternalServerError      = errors.New("internal server error")
 	UnprocessableEntity      = errors.New("unprocessable Entity")
+	Unauthorized             = errors.New("unauthorized error")
 )
 
 type Error struct {

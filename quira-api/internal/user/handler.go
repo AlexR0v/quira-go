@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
 	apperr "quira-api/pkg/app-err"
@@ -21,6 +22,7 @@ func NewHandler(router fiber.Router, log *zerolog.Logger, service *Service) {
 	}
 	api := h.router.Group("/users")
 	api.Get("/", h.GetAllUsers)
+	api.Get("/me", h.GetMe)
 	api.Get("/:id", h.GetUserById)
 }
 
@@ -41,4 +43,16 @@ func (h *Handler) GetUserById(c *fiber.Ctx) error {
 		return apperr.FiberError(c, err)
 	}
 	return appresponse.FiberResponse(c, fiber.StatusOK, "User by id found", userResponse)
+}
+
+func (h *Handler) GetMe(c *fiber.Ctx) error {
+	email, ok := c.Locals("email").(string)
+	if !ok {
+		return apperr.FiberError(c, apperr.NewError(apperr.BadRequest, errors.New("email not found in context")))
+	}
+	userResponse, err := h.service.GetUserByEmail(email)
+	if err != nil {
+		return apperr.FiberError(c, err)
+	}
+	return appresponse.FiberResponse(c, fiber.StatusOK, "User by email found", userResponse)
 }

@@ -8,9 +8,11 @@ export const api = {
       .then(res => res.data),
     signUp: (data: TSignUpRequest): Promise<TSignUpResponse> => axiosQuery.post<TSignUpResponse>('/auth/sign-up', data)
       .then(res => res.data),
+    logout: () => axiosQuery.get('/auth/logout')
+        .then(res => res.data),
   },
   user: {
-    getCurrentUser: () => axiosQuery.get<TUser>('/user/current')
+    getCurrentUser: () => axiosQuery.get<TUser>('/users/me')
       .then(res => res.data),
   },
 }

@@ -9,21 +9,19 @@ const MainLayout = () => {
   
   const location = useLocation()
   
-  const { data, isLoading, error } = useGetCurrentUser()
-  console.log(error)
-  const isLoginStorage = localStorage.getItem('access_token') ?? ''
+  const { isLoading, isError } = useGetCurrentUser()
   
   useEffect(() => {
-    if(isLoginStorage) {
-      setShow(true)
+    if(isError) {
+      setShow(false)
       return
     }
     
-    if(!isLoginStorage) {
-      setShow(false)
+    if(!isError) {
+      setShow(true)
     }
     
-  }, [isLoginStorage, data])
+  }, [isError])
   
   if(isLoading) {
     return <Loader />

@@ -1,0 +1,2 @@
+ALTER TABLE workspaces
+    ADD column created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;

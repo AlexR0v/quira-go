@@ -2,8 +2,11 @@ package middleware
 
 import (
 	"errors"
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
+
 	apperr "quira-api/pkg/app-err"
 )
 
@@ -15,13 +18,18 @@ func AuthMiddleware(store *session.Store) fiber.Handler {
 			panic(err)
 		}
 		userEmail := ""
+		userIdApp := int64(0)
 		if email, ok := sess.Get("email").(string); ok {
 			userEmail = email
 		}
-		if userEmail == "" {
+		if userId, ok := sess.Get("userId").(int64); ok {
+			userIdApp = userId
+		}
+		if userEmail == "" || userIdApp == 0 {
 			return apperr.FiberError(ctx, apperr.NewError(apperr.Unauthorized, errors.New("StatusUnauthorized")))
 		}
 		ctx.Locals("email", userEmail)
+		ctx.Locals("userId", strconv.FormatInt(userIdApp, 10))
 		return ctx.Next()
 	}
 }

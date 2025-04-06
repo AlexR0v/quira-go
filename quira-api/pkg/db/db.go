@@ -2,8 +2,10 @@ package db
 
 import (
 	"context"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
+
 	"quira-api/pkg/config"
 )
 

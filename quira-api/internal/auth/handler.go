@@ -1,12 +1,13 @@
 package auth
 
 import (
-	"fmt"
+	"net/mail"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/gofiber/storage/postgres/v3"
 	"github.com/rs/zerolog"
-	"net/mail"
+
 	apperr "quira-api/pkg/app-err"
 	appresponse "quira-api/pkg/app-response"
 )
@@ -19,7 +20,13 @@ type Handler struct {
 	storage *postgres.Storage
 }
 
-func NewHandler(router fiber.Router, log *zerolog.Logger, service *Service, sess *session.Store, storage *postgres.Storage) {
+func NewHandler(
+	router fiber.Router,
+	log *zerolog.Logger,
+	service *Service,
+	sess *session.Store,
+	storage *postgres.Storage,
+) {
 	h := &Handler{
 		router:  router,
 		log:     log,
@@ -41,7 +48,7 @@ func (h *Handler) SignIn(c *fiber.Ctx) error {
 	if _, err := mail.ParseAddress(input.Email); err != nil {
 		return apperr.FiberError(c, err)
 	}
-	token, err := h.service.Login(input)
+	user, err := h.service.Login(input)
 	if err != nil {
 		return apperr.FiberError(c, err)
 	}
@@ -50,12 +57,12 @@ func (h *Handler) SignIn(c *fiber.Ctx) error {
 	if err != nil {
 		return apperr.FiberError(c, apperr.NewError(apperr.InternalServerError, err))
 	}
-	sess.Set("email", input.Email)
+	sess.Set("email", user.Email)
+	sess.Set("userId", user.ID)
 	if err := sess.Save(); err != nil {
 		return apperr.FiberError(c, apperr.NewError(apperr.InternalServerError, err))
 	}
-
-	return appresponse.FiberResponse(c, fiber.StatusOK, "User logged in successfully", token)
+	return appresponse.FiberResponse(c, fiber.StatusOK, "User logged in successfully", "")
 }
 
 func (h *Handler) SignUp(c *fiber.Ctx) error {
@@ -66,12 +73,22 @@ func (h *Handler) SignUp(c *fiber.Ctx) error {
 	if _, err := mail.ParseAddress(input.Email); err != nil {
 		return apperr.FiberError(c, err)
 	}
-	token, err := h.service.Register(input)
+	user, err := h.service.Register(input)
 	if err != nil {
 		return apperr.FiberError(c, err)
 	}
 
-	return appresponse.FiberResponse(c, fiber.StatusOK, "User registered in successfully", token)
+	sess, err := h.session.Get(c)
+	if err != nil {
+		return apperr.FiberError(c, apperr.NewError(apperr.InternalServerError, err))
+	}
+	sess.Set("email", user.Email)
+	sess.Set("userId", user.ID)
+	if err := sess.Save(); err != nil {
+		return apperr.FiberError(c, apperr.NewError(apperr.InternalServerError, err))
+	}
+
+	return appresponse.FiberResponse(c, fiber.StatusOK, "User registered in successfully", "")
 }
 
 func (h *Handler) Logout(c *fiber.Ctx) error {
@@ -79,7 +96,6 @@ func (h *Handler) Logout(c *fiber.Ctx) error {
 	if err != nil {
 		return apperr.FiberError(c, apperr.NewError(apperr.InternalServerError, err))
 	}
-	fmt.Println(sess.ID())
 	err = h.storage.Delete(sess.ID())
 	if err != nil {
 		return apperr.FiberError(c, apperr.NewError(apperr.InternalServerError, err))

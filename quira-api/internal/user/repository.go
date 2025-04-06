@@ -2,10 +2,11 @@ package user
 
 import (
 	"context"
+	"time"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
-	"time"
 )
 
 type Repository struct {
@@ -53,7 +54,7 @@ func (r *Repository) FindUserByEmail(email string) (User, error) {
 	query := "SELECT id, email, role, last_name, first_name, password, created_at FROM users WHERE email = $1"
 	row := r.db.QueryRow(context.Background(), query, email)
 	var user User
-	err := row.Scan(&user.ID, &user.Role, &user.Email, &user.LastName, &user.FirstName, &user.Password, &user.CreatedAt)
+	err := row.Scan(&user.ID, &user.Email, &user.Role, &user.LastName, &user.FirstName, &user.Password, &user.CreatedAt)
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
 		return User{}, err
@@ -65,7 +66,7 @@ func (r *Repository) FindUserById(id string) (User, error) {
 	query := "SELECT id, email, role, last_name, first_name, password, created_at FROM users WHERE id = $1"
 	row := r.db.QueryRow(context.Background(), query, id)
 	var user User
-	err := row.Scan(&user.ID, &user.Role, &user.Email, &user.LastName, &user.FirstName, &user.Password, &user.CreatedAt)
+	err := row.Scan(&user.ID, &user.Email, &user.Role, &user.LastName, &user.FirstName, &user.Password, &user.CreatedAt)
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
 		return User{}, err

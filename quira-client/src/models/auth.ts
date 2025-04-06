@@ -5,7 +5,8 @@ export type TSignInRequest = {
 
 export type TSignUpRequest = {
   email: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   password: string;
 }
 

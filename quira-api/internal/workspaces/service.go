@@ -48,6 +48,7 @@ func (s *Service) Create(createInput *CreateInput, userId string) (*WorkspaceRes
 	newWorkspace := Workspace{
 		Name:   createInput.Name,
 		UserID: userId,
+		Image:  createInput.Image,
 	}
 
 	createdWorkspace, err := s.repo.Create(newWorkspace)

@@ -13,6 +13,11 @@ export const useWorkSpaceCreate = () => {
   return useMutation({
     mutationFn: (data: TCreateWorkspaceRequest) => api.workspace.create(data),
     onSuccess: () => {
+      toast({
+        variant: 'success',
+        title: 'Успех',
+        description: "Рабочее пространство успешно создано",
+      })
       queryClient.invalidateQueries({queryKey: ['workspace_list']})
     },
     onError: (error: AxiosError<TError>) => {

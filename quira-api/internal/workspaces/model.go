@@ -7,6 +7,7 @@ import (
 type Workspace struct {
 	Name      string           `json:"name"`
 	UserID    string           `json:"user_id"`
+	Image     string           `json:"image"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 	ID        any
 }
@@ -14,6 +15,7 @@ type Workspace struct {
 type WorkspaceResponse struct {
 	Name      string           `json:"name"`
 	UserID    string           `json:"user_id"`
+	Image     string           `json:"image"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 	ID        any              `json:"id"`
 }
@@ -24,7 +26,8 @@ type ResponseList struct {
 }
 
 type CreateInput struct {
-	Name string `json:"name"`
+	Name  string `json:"name"`
+	Image string `json:"image"`
 }
 
 func mapWorkspace(workspace Workspace) *WorkspaceResponse {
@@ -33,5 +36,6 @@ func mapWorkspace(workspace Workspace) *WorkspaceResponse {
 		CreatedAt: workspace.CreatedAt,
 		Name:      workspace.Name,
 		UserID:    workspace.UserID,
+		Image:     workspace.Image,
 	}
 }

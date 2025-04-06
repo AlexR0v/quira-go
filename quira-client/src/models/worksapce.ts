@@ -1,5 +1,6 @@
 export type TCreateWorkspaceRequest = {
   name: string;
+  image?: string
 }
 
 export type TWorkspace = {

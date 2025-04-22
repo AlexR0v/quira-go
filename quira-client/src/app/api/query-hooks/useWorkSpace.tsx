@@ -37,3 +37,27 @@ export const useWorkSpaceList = (params: RequestParamsPagination) => {
   })
 }
 
+export const useWorkSpaceDelete = () => {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => api.workspace.deleteWS(id),
+    onSuccess: () => {
+      toast({
+        variant: 'success',
+        title: 'Успех',
+        description: "Рабочее пространство успешно удалено",
+      })
+      queryClient.invalidateQueries({queryKey: ['workspace_list']})
+    },
+    onError: (error: AxiosError<TError>) => {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: error.response?.data.message ?? 'Что-то пошло не так. Попробуйте позже',
+      })
+    },
+  })
+}
+

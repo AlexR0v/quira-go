@@ -58,3 +58,12 @@ func (s *Service) Create(createInput *CreateInput, userId string) (*WorkspaceRes
 
 	return mapWorkspace(createdWorkspace), nil
 }
+
+func (s *Service) DeleteById(id string) error {
+	err := s.repo.DeleteById(id)
+	if err != nil {
+		return apperr.NewError(apperr.NotFound, err)
+	}
+
+	return nil
+}

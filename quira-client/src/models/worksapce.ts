@@ -8,6 +8,7 @@ export type TWorkspace = {
   id: number;
   created_at: Date;
   user_id: number;
+  image: string
 }
 
 export type ResponseWorkspace = {

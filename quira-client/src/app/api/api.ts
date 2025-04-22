@@ -28,5 +28,7 @@ export const api = {
             data: ResponseWorkspace
         }>('/workspaces', {params, signal})
             .then(res => res.data.data),
+        deleteWS: (id: number) => axiosQuery.delete(`/workspaces/${id}`)
+            .then(res => res.data),
     },
 }

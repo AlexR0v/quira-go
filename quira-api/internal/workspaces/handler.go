@@ -2,7 +2,6 @@ package workspaces
 
 import (
 	"errors"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
 
@@ -26,6 +25,7 @@ func NewHandler(router fiber.Router, log *zerolog.Logger, service *Service) {
 	api.Get("/", h.GetAll)
 	api.Post("/", h.Create)
 	api.Get("/:id", h.GetById)
+	api.Delete("/:id", h.DeleteById)
 }
 
 func (h *Handler) GetAll(c *fiber.Ctx) error {
@@ -65,4 +65,13 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return apperr.FiberError(c, err)
 	}
 	return appresponse.FiberResponse(c, fiber.StatusOK, "New Workspace", workspace)
+}
+
+func (h *Handler) DeleteById(c *fiber.Ctx) error {
+	id := c.Params("id")
+	err := h.service.DeleteById(id)
+	if err != nil {
+		return apperr.FiberError(c, err)
+	}
+	return appresponse.FiberResponse(c, fiber.StatusOK, "Workspace by id deleted", "deleted")
 }

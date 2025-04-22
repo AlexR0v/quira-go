@@ -84,3 +84,13 @@ func (r *Repository) Create(newWorkspace Workspace) (Workspace, error) {
 	// }
 	return workspace, nil
 }
+
+func (r *Repository) DeleteById(id string) error {
+	query := "DELETE FROM workspaces WHERE id = $1"
+	_, err := r.db.Query(context.Background(), query, id)
+	if err != nil {
+		r.logger.Error().Msg(err.Error())
+		return err
+	}
+	return nil
+}

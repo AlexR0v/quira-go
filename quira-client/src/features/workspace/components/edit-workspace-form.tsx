@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { useWorkSpaceCreate } from "@/app/api/query-hooks/useWorkSpace.tsx";
+import { useWorkSpaceUpdate } from "@/app/api/query-hooks/useWorkSpace.tsx";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
@@ -7,22 +7,24 @@ import { Separator } from "@/components/ui/separator.tsx";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { ChangeEvent, useRef } from "react";
+import { ChangeEvent, useEffect, useRef } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
 import { ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast.ts";
-import { generateInviteCode } from "@/lib/utils.ts";
 import { useNavigate } from "react-router";
+import { TWorkspace } from "@/models/worksapce.ts";
 
 interface Props {
-    onCancel: () => void
+    onCancel?: () => void
+    initialValues: TWorkspace
 }
 
 const formSchema = z.object({
     name: z.string()
         .trim()
         .min(1, {message: 'Поле обязательно для заполнения'})
-        .max(250, {message: 'Название должно быть не более 250 символов'}),
+        .max(250, {message: 'Название должно быть не более 250 символов'})
+        .optional(),
     image: z.string()
         .transform(value => value === "" ? undefined : value)
         .optional(),
@@ -35,24 +37,29 @@ const getBase64 = (file: File) => new Promise(function (resolve, reject) {
     reader.onerror = (error) => reject(error);
 })
 
-export const CreateWorkspaceForm = ({onCancel}: Props) => {
+export const EditWorkspaceForm = ({onCancel, initialValues}: Props) => {
 
     const inputRef = useRef<HTMLInputElement>(null)
     const navigate = useNavigate()
 
     const { toast } = useToast()
-    const {mutateAsync, isPending} = useWorkSpaceCreate()
+    const {mutateAsync, isPending} = useWorkSpaceUpdate()
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: '',
+            ...initialValues
         },
     })
+    
+    useEffect(() => {
+        form.setValue("name", initialValues.name)
+        form.setValue("image", initialValues.image)
+    }, [initialValues]);
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
 
-        mutateAsync({ ...values, invite_code: generateInviteCode() })
+        mutateAsync({ ...values, id: initialValues.id.toString() })
             .then(({data}) => {
                 form.reset()
                 navigate(`/workspaces/${data.id}`)
@@ -79,7 +86,7 @@ export const CreateWorkspaceForm = ({onCancel}: Props) => {
         <Card className='w-full h-full border-none shadow-none'>
             <CardHeader className="flex p-7">
                 <CardTitle className="text-xl font-bold">
-                    Создать рабочее пространство
+                    Изменить рабочее пространство
                 </CardTitle>
             </CardHeader>
             <div className="px-7">
@@ -163,7 +170,7 @@ export const CreateWorkspaceForm = ({onCancel}: Props) => {
                                 Отмена
                             </Button>
                             <Button type="submit" size="lg" variant="primary" disabled={isPending}>
-                                Создать
+                                Сохранить
                             </Button>
                         </div>
                     </form>

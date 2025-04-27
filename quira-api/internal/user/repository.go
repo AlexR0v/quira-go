@@ -95,5 +95,18 @@ func (r *Repository) CreateUser(newUser User) (User, error) {
 		r.logger.Error().Msg(err.Error())
 		return User{}, err
 	}
+
+	queryMember := "INSERT INTO members (user_id, role) VALUES (@user_id, @role)"
+	argsMember := pgx.NamedArgs{
+		"user_id":    user.ID,
+		"role":       user.Role,
+		"created_at": time.Now(),
+	}
+	_, errMember := r.db.Exec(context.Background(), queryMember, argsMember)
+	if errMember != nil {
+		r.logger.Error().Msg(errMember.Error())
+		return User{}, errMember
+	}
+
 	return user, nil
 }

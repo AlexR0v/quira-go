@@ -1,5 +1,5 @@
-import {lazy} from 'react'
-import {Route, Routes} from 'react-router'
+import { lazy } from 'react'
+import { Route, Routes } from 'react-router'
 
 const Home = lazy(() => import('../pages/dashboard/dashboard-page.tsx'))
 const SignIn = lazy(() => import('@/pages/auth/sign-in/page.tsx'))
@@ -9,6 +9,8 @@ const MainLayout = lazy(() => import('@/components/main-layout.tsx'))
 const Tasks = lazy(() => import('@/pages/tasks/tasks-page.tsx'))
 const Settings = lazy(() => import('@/pages/settings/SettingsPage.tsx'))
 const Members = lazy(() => import('@/pages/memebers/MembersPage.tsx'))
+const Workspace = lazy(() => import('@/pages/workspace/WorkspacePage.tsx'))
+const WorkspaceCreate = lazy(() => import('@/pages/workspace/WorkspacePageCreate.tsx'))
 
 export const Router = () => {
     return (
@@ -19,16 +21,16 @@ export const Router = () => {
                     element={<Home/>}
                 />
                 <Route
-                    path='tasks'
+                    path='tasks/:id'
                     element={<Tasks/>}
                 />
                 <Route
-                    path='settings'
-                    element={<Settings/>}
+                    path='members/:id'
+                    element={<Members/>}
                 />
                 <Route
-                    path='members'
-                    element={<Members/>}
+                    path='workspaces/:id'
+                    element={<Workspace/>}
                 />
             </Route>
             <Route element={<AuthLayout/>}>
@@ -41,6 +43,14 @@ export const Router = () => {
                     element={<SignUp/>}
                 />
             </Route>
+            <Route
+                path='workspaces/create'
+                element={<WorkspaceCreate/>}
+            />
+            <Route
+                path='settings/:id'
+                element={<Settings/>}
+            />
         </Routes>
     )
 }

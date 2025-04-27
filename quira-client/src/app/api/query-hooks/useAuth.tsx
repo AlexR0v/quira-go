@@ -1,10 +1,10 @@
-import {api} from '@/app/api/api.ts'
-import {useToast} from '@/hooks/use-toast.ts'
-import {TSignInRequest, TSignUpRequest} from '@/models/auth.ts'
-import {TError} from '@/models/TError.ts'
-import {useMutation} from '@tanstack/react-query'
-import {AxiosError} from 'axios'
-import {useNavigate} from 'react-router'
+import { api } from '@/app/api/api.ts'
+import { useToast } from '@/hooks/use-toast.ts'
+import { TSignInRequest, TSignUpRequest } from '@/models/auth.ts'
+import { TError } from '@/models/TError.ts'
+import { useMutation } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
+import { useNavigate } from 'react-router'
 
 export const useAuth = () => {
   const { toast } = useToast()
@@ -47,13 +47,10 @@ export const useRegister = () => {
 }
 
 export const useLogout = () => {
-  const navigate = useNavigate()
-
   return useMutation({
     mutationFn: () => api.auth.logout(),
     onSuccess: () => {
-      //localStorage.setItem('access_token', data.access_token)
-      navigate('/sign-in')
+      window.location.replace('/sign-in')
     },
   })
 }

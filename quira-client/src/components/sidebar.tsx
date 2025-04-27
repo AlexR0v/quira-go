@@ -2,6 +2,7 @@ import logoText from "@/assets/logo-text.svg";
 import {useNavigate} from "react-router";
 import {Separator} from "@/components/ui/separator.tsx";
 import {Navigation} from "@/components/navigation.tsx";
+import {WorkspaceSwitcher} from "@/components/workspace-switcher.tsx";
 
 export const Sidebar = () => {
 
@@ -17,6 +18,8 @@ export const Sidebar = () => {
                     alt='logo'
                 />
             </div>
+            <Separator className="my-4"/>
+            <WorkspaceSwitcher/>
             <Separator className="my-4"/>
             <Navigation/>
         </aside>

@@ -1,6 +1,14 @@
 export type TCreateWorkspaceRequest = {
   name: string;
   image?: string
+  invite_code: string
+}
+
+export type TUpdateWorkspaceRequest = {
+  id: string
+  name?: string;
+  image?: string
+  invite_code?: string
 }
 
 export type TWorkspace = {

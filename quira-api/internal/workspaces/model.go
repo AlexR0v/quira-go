@@ -5,19 +5,21 @@ import (
 )
 
 type Workspace struct {
-	Name      string           `json:"name"`
-	UserID    string           `json:"user_id"`
-	Image     string           `json:"image"`
-	CreatedAt pgtype.Timestamp `json:"created_at"`
-	ID        any
+	Name       string           `json:"name"`
+	UserID     string           `json:"user_id"`
+	Image      string           `json:"image"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
+	InviteCode string           `json:"invite_code"`
+	ID         any
 }
 
 type WorkspaceResponse struct {
-	Name      string           `json:"name"`
-	UserID    string           `json:"user_id"`
-	Image     string           `json:"image"`
-	CreatedAt pgtype.Timestamp `json:"created_at"`
-	ID        any              `json:"id"`
+	Name       string           `json:"name"`
+	UserID     any              `json:"user_id"`
+	Image      string           `json:"image"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
+	InviteCode string           `json:"invite_code"`
+	ID         any              `json:"id"`
 }
 
 type ResponseList struct {
@@ -26,16 +28,25 @@ type ResponseList struct {
 }
 
 type CreateInput struct {
-	Name  string `json:"name"`
-	Image string `json:"image"`
+	Name       string `json:"name"`
+	Image      string `json:"image"`
+	InviteCode string `json:"invite_code"`
+}
+
+type UpdateInput struct {
+	ID         any    `json:"id"`
+	Name       string `json:"name"`
+	Image      string `json:"image"`
+	InviteCode string `json:"invite_code"`
 }
 
 func mapWorkspace(workspace Workspace) *WorkspaceResponse {
 	return &WorkspaceResponse{
-		ID:        workspace.ID,
-		CreatedAt: workspace.CreatedAt,
-		Name:      workspace.Name,
-		UserID:    workspace.UserID,
-		Image:     workspace.Image,
+		ID:         workspace.ID,
+		CreatedAt:  workspace.CreatedAt,
+		Name:       workspace.Name,
+		UserID:     workspace.UserID,
+		InviteCode: workspace.InviteCode,
+		Image:      workspace.Image,
 	}
 }

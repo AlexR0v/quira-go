@@ -46,9 +46,10 @@ func (s *Service) GetById(id string) (*WorkspaceResponse, error) {
 func (s *Service) Create(createInput *CreateInput, userId string) (*WorkspaceResponse, error) {
 
 	newWorkspace := Workspace{
-		Name:   createInput.Name,
-		UserID: userId,
-		Image:  createInput.Image,
+		Name:       createInput.Name,
+		UserID:     userId,
+		Image:      createInput.Image,
+		InviteCode: createInput.InviteCode,
 	}
 
 	createdWorkspace, err := s.repo.Create(newWorkspace)
@@ -66,4 +67,14 @@ func (s *Service) DeleteById(id string) error {
 	}
 
 	return nil
+}
+
+func (s *Service) Update(updateInput *UpdateInput) (*WorkspaceResponse, error) {
+
+	updateWorkspace, err := s.repo.Update(updateInput)
+	if err != nil {
+		return nil, apperr.NewError(apperr.BadRequest, err)
+	}
+
+	return mapWorkspace(updateWorkspace), nil
 }

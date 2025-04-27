@@ -1,39 +1,41 @@
-import {GoCheckCircle, GoCheckCircleFill, GoHome, GoHomeFill} from "react-icons/go"
-import {SettingsIcon, UsersIcon} from "lucide-react";
-import {useLocation, useNavigate} from "react-router";
-import {cn} from "@/lib/utils.ts";
-
-const routes = [
-    {
-        label: "Главная",
-        path: "/",
-        icon: GoHome,
-        activeIcon: GoHomeFill
-    },
-    {
-        label: "Мои задачи",
-        path: "/tasks",
-        icon: GoCheckCircle,
-        activeIcon: GoCheckCircleFill
-    },
-    {
-        label: "Настройки",
-        path: "/settings",
-        icon: SettingsIcon,
-        activeIcon: SettingsIcon
-    },
-    {
-        label: "Участники",
-        path: "/members",
-        icon: UsersIcon,
-        activeIcon: UsersIcon
-    },
-]
+import { GoCheckCircle, GoCheckCircleFill, GoHome, GoHomeFill } from "react-icons/go"
+import { SettingsIcon, UsersIcon } from "lucide-react";
+import { useLocation, useNavigate, useParams } from "react-router";
+import { cn } from "@/lib/utils.ts";
 
 export const Navigation = () => {
 
     const navigate = useNavigate()
     const location = useLocation()
+
+    const {id} = useParams()
+
+    const routes = [
+        {
+            label: "Главная",
+            path: `/workspaces/${id}`,
+            icon: GoHome,
+            activeIcon: GoHomeFill
+        },
+        {
+            label: "Мои задачи",
+            path: `/tasks/${id}`,
+            icon: GoCheckCircle,
+            activeIcon: GoCheckCircleFill
+        },
+        {
+            label: "Настройки",
+            path: `/settings/${id}`,
+            icon: SettingsIcon,
+            activeIcon: SettingsIcon
+        },
+        {
+            label: "Участники",
+            path: `/members/${id}`,
+            icon: UsersIcon,
+            activeIcon: UsersIcon
+        },
+    ]
 
     return (
         <ul className="flex flex-col">

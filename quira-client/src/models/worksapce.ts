@@ -17,6 +17,7 @@ export type TWorkspace = {
   created_at: Date;
   user_id: number;
   image: string
+  invite_code: string
 }
 
 export type ResponseWorkspace = {

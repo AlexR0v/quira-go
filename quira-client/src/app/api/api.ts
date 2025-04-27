@@ -1,8 +1,8 @@
-import { axiosQuery } from '@/app/api/api-config.ts'
-import { TSignInRequest, TSignInResponse, TSignUpRequest, TSignUpResponse } from '@/models/auth.ts'
-import { TUser } from '@/models/user.ts'
-import { ResponseWorkspace, TCreateWorkspaceRequest, TUpdateWorkspaceRequest, TWorkspace } from "@/models/worksapce.ts";
-import { RequestParamsPagination } from "@/app/api/types.ts";
+import {axiosQuery} from '@/app/api/api-config.ts'
+import {TSignInRequest, TSignInResponse, TSignUpRequest, TSignUpResponse} from '@/models/auth.ts'
+import {TUser} from '@/models/user.ts'
+import {ResponseWorkspace, TCreateWorkspaceRequest, TUpdateWorkspaceRequest, TWorkspace} from "@/models/worksapce.ts";
+import {RequestParamsPagination} from "@/app/api/types.ts";
 
 export const api = {
     auth: {
@@ -28,7 +28,7 @@ export const api = {
             data: ResponseWorkspace
         }>('/workspaces', {params, signal})
             .then(res => res.data.data),
-        deleteWS: (id: number) => axiosQuery.delete(`/workspaces/${id}`)
+        deleteWS: (id: string) => axiosQuery.delete(`/workspaces/${id}`)
             .then(res => res.data),
         getById: (id: string, signal?: AbortSignal) => axiosQuery.get<{
             data: TWorkspace

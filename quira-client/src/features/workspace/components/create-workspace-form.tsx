@@ -1,18 +1,18 @@
-import { z } from "zod";
-import { useWorkSpaceCreate } from "@/app/api/query-hooks/useWorkSpace.tsx";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
-import { Separator } from "@/components/ui/separator.tsx";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
-import { Input } from "@/components/ui/input.tsx";
-import { Button } from "@/components/ui/button.tsx";
-import { ChangeEvent, useRef } from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
-import { ImageIcon } from "lucide-react";
-import { useToast } from "@/hooks/use-toast.ts";
-import { generateInviteCode } from "@/lib/utils.ts";
-import { useNavigate } from "react-router";
+import {z} from "zod";
+import {useWorkSpaceCreate} from "@/app/api/query-hooks/useWorkSpace.tsx";
+import {useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx";
+import {Separator} from "@/components/ui/separator.tsx";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form.tsx";
+import {Input} from "@/components/ui/input.tsx";
+import {Button} from "@/components/ui/button.tsx";
+import {ChangeEvent, useRef} from "react";
+import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
+import {ImageIcon} from "lucide-react";
+import {useToast} from "@/hooks/use-toast.ts";
+import {generateInviteCode} from "@/lib/utils.ts";
+import {useNavigate} from "react-router";
 
 interface Props {
     onCancel: () => void
@@ -29,7 +29,7 @@ const formSchema = z.object({
 })
 
 const getBase64 = (file: File) => new Promise(function (resolve, reject) {
-    let reader = new FileReader();
+    const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => resolve(reader.result)
     reader.onerror = (error) => reject(error);
@@ -40,7 +40,7 @@ export const CreateWorkspaceForm = ({onCancel}: Props) => {
     const inputRef = useRef<HTMLInputElement>(null)
     const navigate = useNavigate()
 
-    const { toast } = useToast()
+    const {toast} = useToast()
     const {mutateAsync, isPending} = useWorkSpaceCreate()
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -52,10 +52,11 @@ export const CreateWorkspaceForm = ({onCancel}: Props) => {
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
 
-        mutateAsync({ ...values, invite_code: generateInviteCode() })
+        mutateAsync({...values, invite_code: generateInviteCode()})
             .then(({data}) => {
                 form.reset()
                 navigate(`/workspaces/${data.id}`)
+                onCancel()
             })
     }
 
@@ -140,16 +141,35 @@ export const CreateWorkspaceForm = ({onCancel}: Props) => {
                                                     disabled={isPending}
                                                     onChange={handleImageChange}
                                                 />
-                                                <Button
-                                                    type="button"
-                                                    variant="light"
-                                                    size="sm"
-                                                    onClick={() => inputRef.current?.click()}
-                                                    disabled={isPending}
-                                                    className="w-fit mt-2"
-                                                >
-                                                    Загрузить
-                                                </Button>
+                                                {field.value ? (
+                                                    <Button
+                                                        type="button"
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            form.setValue('image', '')
+                                                            field.onChange('')
+                                                            if (inputRef.current) {
+                                                                inputRef.current.value = ''
+                                                            }
+                                                        }}
+                                                        disabled={isPending}
+                                                        className="w-fit mt-2"
+                                                    >
+                                                        Удалить
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        type="button"
+                                                        variant="light"
+                                                        size="sm"
+                                                        onClick={() => inputRef.current?.click()}
+                                                        disabled={isPending}
+                                                        className="w-fit mt-2"
+                                                    >
+                                                        Загрузить
+                                                    </Button>
+                                                )}
                                             </div>
                                         </div>
 

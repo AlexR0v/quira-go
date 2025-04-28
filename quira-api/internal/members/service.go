@@ -3,6 +3,7 @@ package members
 import (
 	"errors"
 	"github.com/rs/zerolog"
+	"quira-api/internal/user"
 	"quira-api/internal/workspaces"
 	app_err "quira-api/pkg/app-err"
 )
@@ -39,7 +40,32 @@ func (s *Service) Join(input *InputJoin, userId string) (*workspaces.WorkspaceRe
 			return nil, errJoin
 		}
 	} else {
-		return nil, app_err.NewError(app_err.BadRequest, errors.New("пользователь уже состоит в данном рабочем пространстве"))
+		return nil, app_err.NewError(app_err.UserExists, errors.New("пользователь уже состоит в данном проекте"))
 	}
 	return workspaces.MapWorkspace(workspaceW), nil
+}
+
+func (s *Service) DeleteMember(userId string, workspaceId string) error {
+	err := s.repo.DeleteMember(userId, workspaceId)
+	if err != nil {
+		return app_err.NewError(app_err.NotFound, err)
+	}
+
+	return nil
+}
+
+func (s *Service) GetAllMembers(limit, offset int, workspaceId string) (*user.Response, error) {
+	users, countUsers, err := s.repo.FindAll(limit, offset, workspaceId)
+	if err != nil {
+		return nil, app_err.NewError(app_err.InternalServerError, err)
+	}
+	var usersResponses []*user.ResponseUser
+	for _, member := range users {
+		usersResponses = append(usersResponses, user.MapUser(member))
+	}
+	res := &user.Response{
+		Users:      usersResponses,
+		TotalCount: countUsers,
+	}
+	return res, nil
 }

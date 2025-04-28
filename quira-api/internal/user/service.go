@@ -24,7 +24,7 @@ func (s *Service) GetAllUsers(limit, offset int) (*Response, error) {
 	}
 	var usersResponses []*ResponseUser
 	for _, user := range users {
-		usersResponses = append(usersResponses, mapUser(user))
+		usersResponses = append(usersResponses, MapUser(user))
 	}
 	res := &Response{
 		Users:      usersResponses,
@@ -38,7 +38,7 @@ func (s *Service) GetUserById(id string) (*ResponseUser, error) {
 	if err != nil {
 		return nil, apperr.NewError(apperr.NotFound, err)
 	}
-	usersResponses := mapUser(userApp)
+	usersResponses := MapUser(userApp)
 
 	return usersResponses, nil
 }
@@ -48,7 +48,7 @@ func (s *Service) GetUserByEmail(email string) (*ResponseUser, error) {
 	if err != nil {
 		return nil, apperr.NewError(apperr.NotFound, err)
 	}
-	usersResponses := mapUser(userApp)
+	usersResponses := MapUser(userApp)
 
 	return usersResponses, nil
 }

@@ -15,7 +15,7 @@ import {generateInviteCode} from "@/lib/utils.ts";
 import {useNavigate} from "react-router";
 
 interface Props {
-    onCancel: () => void
+    onCancel?: () => void
 }
 
 const formSchema = z.object({
@@ -56,7 +56,7 @@ export const CreateWorkspaceForm = ({onCancel}: Props) => {
             .then(({data}) => {
                 form.reset()
                 navigate(`/workspaces/${data.id}`)
-                onCancel()
+                onCancel?.()
             })
     }
 
@@ -80,7 +80,7 @@ export const CreateWorkspaceForm = ({onCancel}: Props) => {
         <Card className='w-full h-full border-none shadow-none'>
             <CardHeader className="flex p-7">
                 <CardTitle className="text-xl font-bold">
-                    Создать рабочее пространство
+                    Создать проект
                 </CardTitle>
             </CardHeader>
             <div className="px-7">
@@ -97,7 +97,7 @@ export const CreateWorkspaceForm = ({onCancel}: Props) => {
                                 name='name'
                                 render={({field}) => (
                                     <FormItem>
-                                        <FormLabel>Название рабочего пространства</FormLabel>
+                                        <FormLabel>Название проекта</FormLabel>
                                         <FormControl>
                                             <Input
                                                 placeholder='Введите название'
@@ -129,7 +129,7 @@ export const CreateWorkspaceForm = ({onCancel}: Props) => {
                                                 </Avatar>
                                             )}
                                             <div className="flex flex-col">
-                                                <p className="text-sm">Иконка рабочего пространства</p>
+                                                <p className="text-sm">Иконка проекта</p>
                                                 <p className="text-sm text-muted-foreground">
                                                     Формат: png, jpg, jpeg, svg. Максимальный размер - 5 МБ
                                                 </p>
@@ -179,9 +179,11 @@ export const CreateWorkspaceForm = ({onCancel}: Props) => {
                         </div>
                         <Separator className="my-7"/>
                         <div className="flex items-center justify-between">
-                            <Button type="button" size="lg" variant="secondary" onClick={onCancel} disabled={isPending}>
-                                Отмена
-                            </Button>
+                            {onCancel && (
+                                <Button type="button" size="lg" variant="secondary" onClick={onCancel} disabled={isPending}>
+                                    Отмена
+                                </Button>
+                            )}
                             <Button type="submit" size="lg" variant="primary" disabled={isPending}>
                                 Создать
                             </Button>

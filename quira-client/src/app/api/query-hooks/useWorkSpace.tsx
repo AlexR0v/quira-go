@@ -16,9 +16,10 @@ export const useWorkSpaceCreate = () => {
       toast({
         variant: 'success',
         title: 'Успех',
-        description: "Рабочее пространство успешно создано",
+        description: "Проект успешно создан",
       })
       queryClient.invalidateQueries({queryKey: ['workspace_list']})
+      queryClient.invalidateQueries({queryKey: ['members_list']})
     },
     onError: (error: AxiosError<TError>) => {
       toast({
@@ -55,7 +56,7 @@ export const useWorkSpaceDelete = () => {
       toast({
         variant: 'success',
         title: 'Успех',
-        description: "Рабочее пространство успешно удалено",
+        description: "Проект успешно удален",
       })
       queryClient.invalidateQueries({queryKey: ['workspace_list']})
     },
@@ -79,7 +80,7 @@ export const useWorkSpaceUpdate = () => {
       toast({
         variant: 'success',
         title: 'Успех',
-        description: "Рабочее пространство успешно обновлено",
+        description: "Проект успешно обновлен",
       })
       queryClient.invalidateQueries({queryKey: ['workspace', variables.id]})
       queryClient.invalidateQueries({queryKey: ['workspace_list']})

@@ -24,11 +24,11 @@ type ResponseUser struct {
 }
 
 type Response struct {
-	TotalCount int `json:"total_count"`
-	Users      []*ResponseUser
+	TotalCount int             `json:"total_count"`
+	Users      []*ResponseUser `json:"users"`
 }
 
-func mapUser(user User) *ResponseUser {
+func MapUser(user User) *ResponseUser {
 	return &ResponseUser{
 		ID:        user.ID,
 		FirstName: user.FirstName,

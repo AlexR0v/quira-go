@@ -48,5 +48,7 @@ export const api = {
             status: string
         }>('/members/join', data)
             .then(res => res.data),
+        getList: (workspaceId: string, params: RequestParamsPagination, signal?: AbortSignal) => axiosQuery.get<{ data: TUser[], message: string, status: string }>(`/members/${workspaceId}`, {params, signal})
+            .then(res => res.data.data),
     }
 }

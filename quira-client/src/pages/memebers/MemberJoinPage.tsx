@@ -1,22 +1,33 @@
-import {useParams} from "react-router";
-import {useMemberJoin} from "@/app/api/query-hooks/useMembers.tsx";
-import {useEffect} from "react";
+import {Navigate, useParams} from "react-router";
+import {StandaloneLayout} from "@/components/standalone-layout.tsx";
+import {useGetCurrentUser} from "@/app/api/query-hooks/useUser.tsx";
+import {useGetWorkSpace} from "@/app/api/query-hooks/useWorkSpace.tsx";
+import {Loader} from "@/components/ui/loader.tsx";
+import {JoinWorkspaceForm} from "@/features/workspace/components/join-workspace-form.tsx";
 
 const MemberJoinPage = () => {
 
-    const {id, code} = useParams()
-    const {mutateAsync} = useMemberJoin()
+    const {id} = useParams()
+    useGetCurrentUser()
+    const {data, isLoading} = useGetWorkSpace(id)
 
-    useEffect(() => {
-        if(id && code) {
-            mutateAsync({
-                workspace_id: id,
-                invite_code: code
-            })
-        }
-    },[id, code])
+    if (isLoading) {
+        return <Loader/>
+    }
 
-    return <div>MemberJoinPage</div>
+    if (!data) {
+        return <Navigate to="/"/>
+    }
+
+    return (
+        <div className="w-full">
+            <StandaloneLayout>
+                <div className="w-full max-w-xl">
+                    <JoinWorkspaceForm initialValues={data.data.data}/>
+                </div>
+            </StandaloneLayout>
+        </div>
+    )
 }
 
 export default MemberJoinPage

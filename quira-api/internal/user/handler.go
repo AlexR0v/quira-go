@@ -27,7 +27,7 @@ func NewHandler(router fiber.Router, log *zerolog.Logger, service *Service) {
 }
 
 func (h *Handler) GetAllUsers(c *fiber.Ctx) error {
-	size := c.QueryInt("size", 2)
+	size := c.QueryInt("size", 20)
 	page := c.QueryInt("page", 1)
 	users, err := h.service.GetAllUsers(size, (page-1)*size)
 	if err != nil {

@@ -1,10 +1,11 @@
 import {useToast} from "@/hooks/use-toast.ts";
-import {useMutation} from "@tanstack/react-query";
+import {useMutation, useQuery} from "@tanstack/react-query";
 import {api} from "@/app/api/api.ts";
 import {AxiosError} from "axios";
 import {TError} from "@/models/TError.ts";
 import {TMemberJoin} from "@/models/members.ts";
 import {useNavigate} from "react-router";
+import {RequestParamsPagination} from "@/app/api/types.ts";
 
 export const useMemberJoin = () => {
     const {toast} = useToast()
@@ -16,7 +17,7 @@ export const useMemberJoin = () => {
             toast({
                 variant: 'success',
                 title: 'Успех',
-                description: "Вы привязаны к рабочему пространству",
+                description: "Вы присоединились к проекту",
             })
             navigate(`/workspaces/${data.id}`)
         },
@@ -28,5 +29,13 @@ export const useMemberJoin = () => {
                 description: error?.response?.data?.message ?? 'Что-то пошло не так. Попробуйте позже',
             })
         },
+    })
+}
+
+export const useMembersList = (params: RequestParamsPagination, workspaceId?: string) => {
+    return useQuery({
+        queryKey: ['members_list'],
+        queryFn: ({signal}) => api.members.getList(workspaceId ?? "", params, signal),
+        enabled: !!workspaceId,
     })
 }

@@ -1,9 +1,10 @@
-import { useWorkSpaceList } from "@/app/api/query-hooks/useWorkSpace.tsx";
-import { RiAddCircleFill } from "react-icons/ri";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
-import { WorkspaceAvatar } from "@/features/workspace/components/workspace-avatar.tsx";
-import { useNavigate, useParams } from "react-router";
-import { useCreateWorkspaceModal } from "@/features/workspace/hooks/useCreateWorkspaceModal.tsx";
+import {useWorkSpaceList} from "@/app/api/query-hooks/useWorkSpace.tsx";
+import {RiAddCircleFill} from "react-icons/ri";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
+import {WorkspaceAvatar} from "@/features/workspace/components/workspace-avatar.tsx";
+import {useNavigate, useParams} from "react-router";
+import {useCreateWorkspaceModal} from "@/features/workspace/hooks/useCreateWorkspaceModal.tsx";
+import {useMembersList} from "@/app/api/query-hooks/useMembers.tsx";
 
 export const WorkspaceSwitcher = () => {
 
@@ -12,6 +13,7 @@ export const WorkspaceSwitcher = () => {
     const {open} = useCreateWorkspaceModal()
 
     const { data: workspaces } = useWorkSpaceList({ size: 20, page: 1 })
+    useMembersList({ size: 20, page: 1 }, id)
 
     const onSelect = (id: string) => {
         navigate(`/workspaces/${id}`)
@@ -20,12 +22,12 @@ export const WorkspaceSwitcher = () => {
     return (
         <div className="flex flex-col gap-y-2">
             <div className="flex items-center justify-between">
-                <p className="text-xs uppercase text-neutral-500">Рабочие пространства</p>
+                <p className="text-xs uppercase text-neutral-500">РПроекты</p>
                 <RiAddCircleFill onClick={open} className="size-5 text-neutral-500 cursor-pointer hover:opacity-75 transition"/>
             </div>
             <Select onValueChange={onSelect} value={id}>
                 <SelectTrigger className="w-full bg-neutral-200 font-medium p-1">
-                    <SelectValue placeholder="Выберите рабочее пространство"/>
+                    <SelectValue placeholder="Выберите проект"/>
                 </SelectTrigger>
                 <SelectContent>
                     {workspaces?.workspaces?.map(item => (

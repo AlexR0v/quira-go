@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils.ts";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
+import {cn} from "@/lib/utils.ts";
+import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
 
 interface Props {
     image?: string
@@ -26,7 +26,7 @@ export const WorkspaceAvatar = ({ image, className, name }: Props) => {
     return (
         <Avatar className={cn("size-8", className)}>
             <AvatarFallback className="text-white bg-blue-600 font-semibold text-lg">
-                {name[0].toUpperCase()}
+                {name[0]?.toUpperCase()}
             </AvatarFallback>
         </Avatar>
     )

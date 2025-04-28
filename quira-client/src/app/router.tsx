@@ -11,6 +11,7 @@ const Settings = lazy(() => import('@/pages/settings/SettingsPage.tsx'))
 const Members = lazy(() => import('@/pages/memebers/MembersPage.tsx'))
 const Workspace = lazy(() => import('@/pages/workspace/WorkspacePage.tsx'))
 const WorkspaceCreate = lazy(() => import('@/pages/workspace/WorkspacePageCreate.tsx'))
+const MemberJoinPage = lazy(() => import('@/pages/memebers/MemberJoinPage.tsx'))
 
 export const Router = () => {
     return (
@@ -50,6 +51,10 @@ export const Router = () => {
             <Route
                 path='workspaces/:id/settings'
                 element={<Settings/>}
+            />
+            <Route
+                path='workspaces/:id/join/:code'
+                element={<MemberJoinPage/>}
             />
         </Routes>
     )

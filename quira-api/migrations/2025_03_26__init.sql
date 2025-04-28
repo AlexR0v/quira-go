@@ -39,6 +39,3 @@ create table if not exists members
     created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     role         VARCHAR(255) NOT NULL DEFAULT 'USER' check (role in ('USER', 'ADMIN'))
 );
-
-INSERT INTO members (user_id, role)
-values (1, 'ADMIN');

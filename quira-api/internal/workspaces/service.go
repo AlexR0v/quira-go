@@ -25,7 +25,7 @@ func (s *Service) GetAll(limit, offset int, userId string) (*ResponseList, error
 	}
 	var response []*WorkspaceResponse
 	for _, workspace := range workspaces {
-		response = append(response, mapWorkspace(workspace))
+		response = append(response, MapWorkspace(workspace))
 	}
 	res := &ResponseList{
 		Workspaces: response,
@@ -40,7 +40,7 @@ func (s *Service) GetById(id string) (*WorkspaceResponse, error) {
 		return nil, apperr.NewError(apperr.NotFound, err)
 	}
 
-	return mapWorkspace(wApp), nil
+	return MapWorkspace(wApp), nil
 }
 
 func (s *Service) Create(createInput *CreateInput, userId string) (*WorkspaceResponse, error) {
@@ -57,7 +57,7 @@ func (s *Service) Create(createInput *CreateInput, userId string) (*WorkspaceRes
 		return nil, apperr.NewError(apperr.BadRequest, err)
 	}
 
-	return mapWorkspace(createdWorkspace), nil
+	return MapWorkspace(createdWorkspace), nil
 }
 
 func (s *Service) DeleteById(id string) error {
@@ -76,5 +76,5 @@ func (s *Service) Update(updateInput *UpdateInput) (*WorkspaceResponse, error) {
 		return nil, apperr.NewError(apperr.BadRequest, err)
 	}
 
-	return mapWorkspace(updateWorkspace), nil
+	return MapWorkspace(updateWorkspace), nil
 }

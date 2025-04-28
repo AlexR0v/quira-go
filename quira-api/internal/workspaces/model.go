@@ -40,7 +40,7 @@ type UpdateInput struct {
 	InviteCode string `json:"invite_code"`
 }
 
-func mapWorkspace(workspace Workspace) *WorkspaceResponse {
+func MapWorkspace(workspace Workspace) *WorkspaceResponse {
 	return &WorkspaceResponse{
 		ID:         workspace.ID,
 		CreatedAt:  workspace.CreatedAt,

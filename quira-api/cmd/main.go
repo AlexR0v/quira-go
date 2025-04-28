@@ -1,6 +1,7 @@
 package main
 
 import (
+	"quira-api/internal/members"
 	"time"
 
 	"github.com/gofiber/contrib/fiberzerolog"
@@ -54,11 +55,13 @@ func main() {
 	// Repositories
 	userRepo := user.NewRepository(dbPool, log)
 	workspaceRepo := workspaces.NewRepository(dbPool, log)
+	membersRepo := members.NewRepository(dbPool, log)
 
 	// Services
 	authService := auth.NewService(userRepo, log)
 	userService := user.NewService(userRepo, log)
 	workspaceService := workspaces.NewService(workspaceRepo, log)
+	membersService := members.NewService(membersRepo, log, workspaceRepo)
 
 	// Handlers
 	auth.NewHandler(app, log, authService, sessionApp, storage)
@@ -66,6 +69,7 @@ func main() {
 	app.Use(middleware.AuthMiddleware(sessionApp))
 	user.NewHandler(app, log, userService)
 	workspaces.NewHandler(app, log, workspaceService)
+	members.NewHandler(app, log, membersService)
 
 	err := app.Listen(":9000")
 	if err != nil {

@@ -1,39 +1,45 @@
 package members
 
 import (
+	"errors"
 	"github.com/rs/zerolog"
-
-	"quira-api/internal/user"
-	apperr "quira-api/pkg/app-err"
+	"quira-api/internal/workspaces"
+	app_err "quira-api/pkg/app-err"
 )
 
 type Service struct {
-	repo   *Repository
-	logger *zerolog.Logger
+	repo           *Repository
+	repoWorkspaces *workspaces.Repository
+	logger         *zerolog.Logger
 }
 
-func NewService(repo *Repository, logger *zerolog.Logger) *Service {
+func NewService(repo *Repository, logger *zerolog.Logger, repoWorkspaces *workspaces.Repository) *Service {
 	return &Service{
-		repo:   repo,
-		logger: logger,
+		repo:           repo,
+		logger:         logger,
+		repoWorkspaces: repoWorkspaces,
 	}
 }
 
-func (s *Service) GetById(id string) (*ResponseMember, error) {
-	member, err := s.repo.FindById(id)
+func (s *Service) Join(input *InputJoin, userId string) (*workspaces.WorkspaceResponse, error) {
+
+	workspace, err := s.repoWorkspaces.FindByMemberId(input.WorkspaceID.(string), userId)
 	if err != nil {
-		return nil, apperr.NewError(apperr.InternalServerError, err)
+		return nil, err
 	}
 
-	return mapMember(member), nil
-}
-
-func (s *Service) Create(user user.User) (*ResponseMember, error) {
-
-	createdMember, err := s.repo.Create(user)
+	workspaceW, err := s.repoWorkspaces.FindById(input.WorkspaceID.(string))
 	if err != nil {
-		return nil, apperr.NewError(apperr.BadRequest, err)
+		return nil, err
 	}
 
-	return mapMember(createdMember), nil
+	if workspace.ID == nil {
+		errJoin := s.repo.JoinMember(workspaceW, userId)
+		if errJoin != nil {
+			return nil, errJoin
+		}
+	} else {
+		return nil, app_err.NewError(app_err.BadRequest, errors.New("пользователь уже состоит в данном рабочем пространстве"))
+	}
+	return workspaces.MapWorkspace(workspaceW), nil
 }

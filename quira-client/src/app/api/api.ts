@@ -3,6 +3,7 @@ import {TSignInRequest, TSignInResponse, TSignUpRequest, TSignUpResponse} from '
 import {TUser} from '@/models/user.ts'
 import {ResponseWorkspace, TCreateWorkspaceRequest, TUpdateWorkspaceRequest, TWorkspace} from "@/models/worksapce.ts";
 import {RequestParamsPagination} from "@/app/api/types.ts";
+import {TMemberJoin} from "@/models/members.ts";
 
 export const api = {
     auth: {
@@ -40,4 +41,12 @@ export const api = {
         }>('/workspaces', data)
             .then(res => res.data),
     },
+    members: {
+        join: (data: TMemberJoin) => axiosQuery.post<{
+            data: TWorkspace,
+            message: string,
+            status: string
+        }>('/members/join', data)
+            .then(res => res.data),
+    }
 }

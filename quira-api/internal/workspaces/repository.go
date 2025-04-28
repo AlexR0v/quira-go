@@ -2,7 +2,8 @@ package workspaces
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
+	"errors"
 	"strconv"
 	"time"
 
@@ -24,7 +25,7 @@ func NewRepository(db *pgxpool.Pool, logger *zerolog.Logger) *Repository {
 }
 
 func (r *Repository) CountWorkspaces(userId string) int {
-	query := "SELECT count(id) from workspaces where user_id = $1"
+	query := "SELECT count(w.id) from workspaces w JOIN  public.members m ON w.id = m.workspace_id where m.user_id = $1"
 	var countWorkspaces int
 	err := r.db.QueryRow(context.Background(), query, userId).Scan(&countWorkspaces)
 	if err != nil {
@@ -34,7 +35,7 @@ func (r *Repository) CountWorkspaces(userId string) int {
 }
 
 func (r *Repository) FindAll(limit, offset int, userId string) ([]Workspace, int, error) {
-	query := "SELECT id, name, image, created_at, user_id, invite_code FROM workspaces where workspaces.user_id = $3 order by created_at desc limit $1 offset $2"
+	query := "SELECT w.id, w.name, w.image, w.created_at, w.user_id, w.invite_code FROM workspaces w JOIN  public.members m ON w.id = m.workspace_id where m.user_id = $3 order by w.created_at desc limit $1 offset $2"
 	rows, err := r.db.Query(context.Background(), query, limit, offset, userId)
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
@@ -71,6 +72,29 @@ func (r *Repository) FindById(id string) (Workspace, error) {
 	return workspace, nil
 }
 
+func (r *Repository) FindByMemberId(id string, userId string) (Workspace, error) {
+	query := "SELECT DISTINCT w.id, w.name, w.image, w.created_at, w.user_id, w.invite_code FROM workspaces w JOIN  public.members m ON w.id = m.workspace_id WHERE w.id = $1 and m.user_id = $2"
+	row := r.db.QueryRow(context.Background(), query, id, userId)
+
+	var workspace Workspace
+	err := row.Scan(
+		&workspace.ID,
+		&workspace.Name,
+		&workspace.Image,
+		&workspace.CreatedAt,
+		&workspace.UserID,
+		&workspace.InviteCode,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Workspace{}, nil
+		}
+		r.logger.Error().Msg(err.Error())
+		return Workspace{}, err
+	}
+	return workspace, nil
+}
+
 func (r *Repository) Create(newWorkspace Workspace) (Workspace, error) {
 	query := "INSERT INTO workspaces (name, user_id, created_at, image, invite_code) VALUES (@name, @user_id, @created_at, @image, @invite_code) returning id, name, created_at, image, user_id, invite_code"
 	args := pgx.NamedArgs{
@@ -95,13 +119,19 @@ func (r *Repository) Create(newWorkspace Workspace) (Workspace, error) {
 		return Workspace{}, err
 	}
 
-	queryMembers := "UPDATE members SET workspace_id = $1 WHERE user_id = $2"
-	_, errMembers := r.db.Exec(context.Background(), queryMembers, workspace.ID, workspace.UserID)
+	queryMembers := "INSERT INTO members (user_id, role, workspace_id) VALUES (@user_id, @role, @workspace_id)"
+	argsMem := pgx.NamedArgs{
+		"user_id":      workspace.UserID,
+		"role":         "ADMIN",
+		"created_at":   time.Now(),
+		"workspace_id": workspace.ID,
+	}
+	rows, errMembers := r.db.Query(context.Background(), queryMembers, argsMem)
 	if errMembers != nil {
 		r.logger.Error().Msg(errMembers.Error())
 		return Workspace{}, errMembers
 	}
-
+	defer rows.Close()
 	return workspace, nil
 }
 
@@ -130,7 +160,7 @@ func (r *Repository) Update(ws *UpdateInput) (Workspace, error) {
 		r.logger.Error().Msg(err.Error())
 		return Workspace{}, err
 	}
-	fmt.Println(workspaceId)
+
 	workspace, err := r.FindById(strconv.FormatInt(workspaceId, 10))
 	if err != nil {
 		r.logger.Error().Msg(err.Error())

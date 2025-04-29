@@ -69,3 +69,11 @@ func (s *Service) GetAllMembers(limit, offset int, workspaceId string) (*user.Re
 	}
 	return res, nil
 }
+
+func (s *Service) UpdateRole(input *InputUpdateRole) error {
+	err := s.repo.UpdateRole(*input)
+	if err != nil {
+		return app_err.NewError(app_err.NotFound, err)
+	}
+	return nil
+}

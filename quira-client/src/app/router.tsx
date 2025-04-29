@@ -26,10 +26,6 @@ export const Router = () => {
                     element={<Tasks/>}
                 />
                 <Route
-                    path='workspaces/:id/members'
-                    element={<Members/>}
-                />
-                <Route
                     path='workspaces/:id'
                     element={<Workspace/>}
                 />
@@ -55,6 +51,10 @@ export const Router = () => {
             <Route
                 path='workspaces/:id/join/:code'
                 element={<MemberJoinPage/>}
+            />
+            <Route
+                path='workspaces/:id/members'
+                element={<Members/>}
             />
         </Routes>
     )

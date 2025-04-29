@@ -1,5 +1,6 @@
-import { useGetWorkSpace } from "@/app/api/query-hooks/useWorkSpace.tsx";
-import { useParams } from "react-router";
+import {useGetWorkSpace} from "@/app/api/query-hooks/useWorkSpace.tsx";
+import {useParams} from "react-router";
+import {Loader} from "@/components/ui/loader.tsx";
 
 const WorkspacePage = () => {
 
@@ -8,7 +9,7 @@ const WorkspacePage = () => {
     const { data, isLoading } = useGetWorkSpace(id)
 
     if (isLoading) {
-        return <div>Loading...</div>
+        return <Loader/>
     }
 
     return (

@@ -4,7 +4,6 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {WorkspaceAvatar} from "@/features/workspace/components/workspace-avatar.tsx";
 import {useNavigate, useParams} from "react-router";
 import {useCreateWorkspaceModal} from "@/features/workspace/hooks/useCreateWorkspaceModal.tsx";
-import {useMembersList} from "@/app/api/query-hooks/useMembers.tsx";
 
 export const WorkspaceSwitcher = () => {
 
@@ -13,7 +12,6 @@ export const WorkspaceSwitcher = () => {
     const {open} = useCreateWorkspaceModal()
 
     const { data: workspaces } = useWorkSpaceList({ size: 20, page: 1 })
-    useMembersList({ size: 20, page: 1 }, id)
 
     const onSelect = (id: string) => {
         navigate(`/workspaces/${id}`)

@@ -2,7 +2,6 @@ package members
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
 	apperr "quira-api/pkg/app-err"
@@ -24,6 +23,7 @@ func NewHandler(router fiber.Router, log *zerolog.Logger, service *Service) {
 	api := h.router.Group("/members")
 	api.Get("/:workspaceId", h.GetAllMembers)
 	api.Post("/join", h.Join)
+	api.Post("/update-role", h.UpdateRole)
 	api.Delete("/:workspaceId/:userId", h.DeleteMember)
 }
 
@@ -33,7 +33,6 @@ func (h *Handler) Join(c *fiber.Ctx) error {
 		return apperr.FiberError(c, err)
 	}
 	userId, ok := c.Locals("userId").(string)
-	fmt.Println(userId)
 	if !ok {
 		return apperr.FiberError(c, apperr.NewError(apperr.UserExists, errors.New("userId not found in context")))
 	}
@@ -63,4 +62,16 @@ func (h *Handler) GetAllMembers(c *fiber.Ctx) error {
 		return apperr.FiberError(c, err)
 	}
 	return appresponse.FiberResponse(c, fiber.StatusOK, "Members list", users)
+}
+
+func (h *Handler) UpdateRole(c *fiber.Ctx) error {
+	input := new(InputUpdateRole)
+	if err := c.BodyParser(input); err != nil {
+		return apperr.FiberError(c, err)
+	}
+	err := h.service.UpdateRole(input)
+	if err != nil {
+		return apperr.FiberError(c, err)
+	}
+	return appresponse.FiberResponse(c, fiber.StatusOK, "Role updated", "ok")
 }

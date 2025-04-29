@@ -77,3 +77,20 @@ func (r *Repository) FindAll(limit, offset int, workspaceId string) ([]user.User
 
 	return users, countUsers, nil
 }
+
+func (r *Repository) UpdateRole(input InputUpdateRole) error {
+	query := "UPDATE members SET role = @role WHERE user_id = @user_id AND workspace_id = @workspace_id"
+	args := pgx.NamedArgs{
+		"role":         input.Role,
+		"user_id":      input.UserId,
+		"workspace_id": input.WorkspaceId,
+	}
+	row, err := r.db.Query(context.Background(), query, args)
+	defer row.Close()
+	if err != nil {
+		r.logger.Error().Msg(err.Error())
+		return err
+	}
+
+	return nil
+}

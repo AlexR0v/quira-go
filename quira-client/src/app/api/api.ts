@@ -3,7 +3,7 @@ import {TSignInRequest, TSignInResponse, TSignUpRequest, TSignUpResponse} from '
 import {TUser} from '@/models/user.ts'
 import {ResponseWorkspace, TCreateWorkspaceRequest, TUpdateWorkspaceRequest, TWorkspace} from "@/models/worksapce.ts";
 import {RequestParamsPagination} from "@/app/api/types.ts";
-import {TMemberJoin} from "@/models/members.ts";
+import {ResponseMembers, TMemberDelete, TMemberJoin, TMemberUpdateRole} from "@/models/members.ts";
 
 export const api = {
     auth: {
@@ -48,7 +48,14 @@ export const api = {
             status: string
         }>('/members/join', data)
             .then(res => res.data),
-        getList: (workspaceId: string, params: RequestParamsPagination, signal?: AbortSignal) => axiosQuery.get<{ data: TUser[], message: string, status: string }>(`/members/${workspaceId}`, {params, signal})
+        getList: (workspaceId: string, params: RequestParamsPagination, signal?: AbortSignal) => axiosQuery.get<{ data: ResponseMembers, message: string, status: string }>(`/members/${workspaceId}`, {params, signal})
             .then(res => res.data.data),
+        updateRole: (data: TMemberUpdateRole) => axiosQuery.post<{
+            data: string,
+            message: string,
+            status: string
+        }>('/members/update-role', data),
+        deleteMember: (data: TMemberDelete) => axiosQuery.delete(`/members/${data.workspace_id}/${data.user_id}`)
+            .then(res => res.data),
     }
 }

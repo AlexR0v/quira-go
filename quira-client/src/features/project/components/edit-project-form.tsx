@@ -1,5 +1,4 @@
 import {z} from "zod";
-import {useWorkSpaceDelete, useWorkSpaceUpdate} from "@/app/api/query-hooks/useWorkSpace.tsx";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx";
@@ -9,16 +8,16 @@ import {Input} from "@/components/ui/input.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {ChangeEvent, useEffect, useRef} from "react";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
-import {ArrowLeftIcon, CopyIcon, ImageIcon} from "lucide-react";
+import {ArrowLeftIcon, ImageIcon} from "lucide-react";
 import {useToast} from "@/hooks/use-toast.ts";
 import {useNavigate} from "react-router";
-import {TWorkspace} from "@/models/worksapce.ts";
 import {useConfirm} from "@/hooks/use-confirm.tsx";
-import {generateInviteCode} from "@/lib/utils.ts";
+import {TProject} from "@/models/project.ts";
+import {useProjectDelete, useProjectUpdate} from "@/app/api/query-hooks/useProject.tsx";
 
 interface Props {
     onCancel?: () => void
-    initialValues: TWorkspace
+    initialValues: TProject
 }
 
 const formSchema = z.object({
@@ -39,21 +38,16 @@ const getBase64 = (file: File) => new Promise(function (resolve, reject) {
     reader.onerror = (error) => reject(error);
 })
 
-export const EditWorkspaceForm = ({onCancel, initialValues}: Props) => {
+export const EditProjectForm = ({onCancel, initialValues}: Props) => {
 
     const inputRef = useRef<HTMLInputElement>(null)
     const navigate = useNavigate()
 
     const {toast} = useToast()
-    const {mutateAsync, isPending} = useWorkSpaceUpdate()
-    const {mutateAsync: deleteMutateAsync, isPending: deleteIsPending} = useWorkSpaceDelete()
+    const {mutateAsync, isPending} = useProjectUpdate()
+    const {mutateAsync: deleteMutateAsync, isPending: deleteIsPending} = useProjectDelete()
     const [DeleteModal, confirmDelete] = useConfirm(
-        "Удалить рабочее пространство?",
-        "Это действие нельзя будет отменить. Вы уверены?",
-        "destructive",
-    )
-    const [ResetInviteCodeModal, confirmResetInviteCode] = useConfirm(
-        "Изменить пригласительную ссылку?",
+        "Удалить проект?",
         "Это действие нельзя будет отменить. Вы уверены?",
         "destructive",
     )
@@ -72,27 +66,21 @@ export const EditWorkspaceForm = ({onCancel, initialValues}: Props) => {
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
 
-        mutateAsync({...values, id: initialValues.id.toString()})
+        mutateAsync({...values, id: initialValues.id.toString(), workspace_id: initialValues.workspace_id.toString()})
             .then(({data}) => {
                 form.reset()
-                navigate(`/workspaces/${data.id}`)
+                navigate(`/workspaces/${data.workspace_id}/projects/${data.id}`)
             })
     }
 
     const handleDelete = async () => {
         const ok = await confirmDelete()
         if(!ok) return
-        await deleteMutateAsync(initialValues.id.toString())
-        window.location.href = "/"
-    }
-
-    const handleResetInviteCode = async () => {
-        const ok = await confirmResetInviteCode()
-        if(!ok) return
-        await mutateAsync({
+        await deleteMutateAsync({
             id: initialValues.id.toString(),
-            invite_code: generateInviteCode()
+            workspace_id: initialValues.workspace_id.toString(),
         })
+        window.location.href = "/"
     }
 
     const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -111,12 +99,9 @@ export const EditWorkspaceForm = ({onCancel, initialValues}: Props) => {
         }
     }
 
-    const fullInviteLink = `${window.location.origin}/workspaces/${initialValues.id}/join/${initialValues.invite_code}`
-
     return (
         <div className="flex flex-col gap-y-4">
             <DeleteModal/>
-            <ResetInviteCodeModal/>
             <Card className='w-full h-full border-none shadow-none'>
                 <CardHeader className="flex p-7 flex-row items-center gap-x-4 space-y-0">
                     <Button variant="secondary" size="sm" onClick={onCancel} type="button">
@@ -141,7 +126,7 @@ export const EditWorkspaceForm = ({onCancel, initialValues}: Props) => {
                                     name='name'
                                     render={({field}) => (
                                         <FormItem>
-                                            <FormLabel>Название рабочего пространства</FormLabel>
+                                            <FormLabel>Название проекта</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     placeholder='Введите название'
@@ -173,7 +158,7 @@ export const EditWorkspaceForm = ({onCancel, initialValues}: Props) => {
                                                     </Avatar>
                                                 )}
                                                 <div className="flex flex-col">
-                                                    <p className="text-sm">Иконка рабочего пространства</p>
+                                                    <p className="text-sm">Иконка проекта</p>
                                                     <p className="text-sm text-muted-foreground">
                                                         Формат: png, jpg, jpeg, svg. Максимальный размер - 5 МБ
                                                     </p>
@@ -235,51 +220,9 @@ export const EditWorkspaceForm = ({onCancel, initialValues}: Props) => {
             <Card className=" w-full h-full border-none shadow-none">
                 <CardContent className="p-7">
                     <div className="flex flex-col">
-                        <h3 className="font-bold">Приглашение участников</h3>
-                        <p className="text-sm text-muted-foreground">
-                            Используйте эту ссылку для приглашения участников в Рабочее пространство
-                        </p>
-                        <div className="mt-4">
-                            <div className="flex items-center gap-x-2">
-                                <Input disabled value={fullInviteLink}/>
-                                <Button
-                                    onClick={() => {
-                                        navigator.clipboard.writeText(fullInviteLink).then(() =>
-                                            toast({
-                                                variant: 'success',
-                                                title: 'Ссылка скопирована в буфер обмена',
-                                            })
-                                        )
-                                    }}
-                                    variant="secondary"
-                                    className="size-12"
-                                >
-                                    <CopyIcon className="size-5"/>
-                                </Button>
-                            </div>
-                        </div>
-                        <div className="py-7">
-                            <Separator/>
-                        </div>
-                        <Button
-                            className="w-fit ml-auto"
-                            size="sm"
-                            variant="destructive"
-                            type="button"
-                            disabled={deleteIsPending || isPending}
-                            onClick={handleResetInviteCode}
-                        >
-                            Изменить ссылку
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card className=" w-full h-full border-none shadow-none">
-                <CardContent className="p-7">
-                    <div className="flex flex-col">
                         <h3 className="font-bold">Внимание!</h3>
                         <p className="text-sm text-muted-foreground">
-                            Удаление рабочего пространства необратимо и приведет к удалению всех связанных с ним данных.
+                            Удаление проекта необратимо и приведет к удалению всех связанных с ним данных.
                         </p>
                         <div className="py-7">
                             <Separator/>
@@ -292,7 +235,7 @@ export const EditWorkspaceForm = ({onCancel, initialValues}: Props) => {
                             disabled={deleteIsPending || isPending}
                             onClick={handleDelete}
                         >
-                            Удалить Рабочее пространство
+                            Удалить проект
                         </Button>
                     </div>
                 </CardContent>

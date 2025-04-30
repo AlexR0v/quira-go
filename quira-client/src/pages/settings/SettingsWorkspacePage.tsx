@@ -3,7 +3,7 @@ import {EditWorkspaceForm} from "@/features/workspace/components/edit-workspace-
 import {Navigate, useNavigate, useParams} from "react-router";
 import {useGetWorkSpace} from "@/app/api/query-hooks/useWorkSpace.tsx";
 
-const SettingsPage = () => {
+const SettingsWorkspacePage = () => {
 
     const { id } = useParams()
     const navigate = useNavigate()
@@ -29,4 +29,4 @@ const SettingsPage = () => {
     )
 }
 
-export default SettingsPage
+export default SettingsWorkspacePage

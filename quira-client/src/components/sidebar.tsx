@@ -3,7 +3,7 @@ import {useNavigate} from "react-router";
 import {Separator} from "@/components/ui/separator.tsx";
 import {Navigation} from "@/components/navigation.tsx";
 import {WorkspaceSwitcher} from "@/components/workspace-switcher.tsx";
-import {ProjectSwitcher} from "@/components/project-switcher.tsx";
+import {Projects} from "@/components/projects.tsx";
 
 export const Sidebar = () => {
 
@@ -23,7 +23,8 @@ export const Sidebar = () => {
             <WorkspaceSwitcher/>
             <Separator className="my-4"/>
             <Navigation/>
-            <ProjectSwitcher/>
+            <Separator className="my-4"/>
+            <Projects/>
         </aside>
     )
 }

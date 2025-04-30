@@ -53,9 +53,9 @@ export const CreateProjectForm = ({onCancel}: Props) => {
     const onSubmit = (values: z.infer<typeof formSchema>) => {
 
         mutateAsync({...values, workspace_id: id ?? ""})
-            .then(() => {
+            .then(({data}) => {
                 form.reset()
-                navigate(`/workspaces/${id}`)
+                navigate(`/workspaces/${id}/projects/${data.id}`)
                 onCancel?.()
             })
     }

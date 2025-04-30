@@ -1,5 +1,4 @@
 import {z} from "zod";
-import {useWorkSpaceCreate} from "@/app/api/query-hooks/useWorkSpace.tsx";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx";
@@ -11,8 +10,8 @@ import {ChangeEvent, useRef} from "react";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
 import {ImageIcon} from "lucide-react";
 import {useToast} from "@/hooks/use-toast.ts";
-import {generateInviteCode} from "@/lib/utils.ts";
-import {useNavigate} from "react-router";
+import {useNavigate, useParams} from "react-router";
+import {useProjectCreate} from "@/app/api/query-hooks/useProject.tsx";
 
 interface Props {
     onCancel?: () => void
@@ -35,13 +34,14 @@ const getBase64 = (file: File) => new Promise(function (resolve, reject) {
     reader.onerror = (error) => reject(error);
 })
 
-export const CreateWorkspaceForm = ({onCancel}: Props) => {
+export const CreateProjectForm = ({onCancel}: Props) => {
 
     const inputRef = useRef<HTMLInputElement>(null)
     const navigate = useNavigate()
 
+    const {id} = useParams()
     const {toast} = useToast()
-    const {mutateAsync, isPending} = useWorkSpaceCreate()
+    const {mutateAsync, isPending} = useProjectCreate()
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -52,10 +52,10 @@ export const CreateWorkspaceForm = ({onCancel}: Props) => {
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
 
-        mutateAsync({...values, invite_code: generateInviteCode()})
-            .then(({data}) => {
+        mutateAsync({...values, workspace_id: id ?? ""})
+            .then(() => {
                 form.reset()
-                navigate(`/workspaces/${data.id}`)
+                navigate(`/workspaces/${id}`)
                 onCancel?.()
             })
     }
@@ -80,7 +80,7 @@ export const CreateWorkspaceForm = ({onCancel}: Props) => {
         <Card className='w-full h-full border-none shadow-none'>
             <CardHeader className="flex p-7">
                 <CardTitle className="text-xl font-bold">
-                    Создать Рабочее пространство
+                    Создать проект
                 </CardTitle>
             </CardHeader>
             <div className="px-7">
@@ -97,7 +97,7 @@ export const CreateWorkspaceForm = ({onCancel}: Props) => {
                                 name='name'
                                 render={({field}) => (
                                     <FormItem>
-                                        <FormLabel>Название Рабочего пространства</FormLabel>
+                                        <FormLabel>Название проекта</FormLabel>
                                         <FormControl>
                                             <Input
                                                 placeholder='Введите название'
@@ -129,7 +129,7 @@ export const CreateWorkspaceForm = ({onCancel}: Props) => {
                                                 </Avatar>
                                             )}
                                             <div className="flex flex-col">
-                                                <p className="text-sm">Иконка Рабочего пространства</p>
+                                                <p className="text-sm">Иконка проекта</p>
                                                 <p className="text-sm text-muted-foreground">
                                                     Формат: png, jpg, jpeg, svg. Максимальный размер - 5 МБ
                                                 </p>

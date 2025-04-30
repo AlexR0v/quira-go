@@ -17,7 +17,7 @@ export const useMemberJoin = () => {
             toast({
                 variant: 'success',
                 title: 'Успех',
-                description: "Вы присоединились к проекту",
+                description: "Вы присоединились к рабочему пространству",
             })
             navigate(`/workspaces/${data.id}`)
         },

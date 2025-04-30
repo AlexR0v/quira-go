@@ -4,6 +4,7 @@ import {TUser} from '@/models/user.ts'
 import {ResponseWorkspace, TCreateWorkspaceRequest, TUpdateWorkspaceRequest, TWorkspace} from "@/models/worksapce.ts";
 import {RequestParamsPagination} from "@/app/api/types.ts";
 import {ResponseMembers, TMemberDelete, TMemberJoin, TMemberUpdateRole} from "@/models/members.ts";
+import {ResponseProject, TCreateProjectRequest, TProject, TUpdateProjectRequest} from "@/models/project.ts";
 
 export const api = {
     auth: {
@@ -57,5 +58,28 @@ export const api = {
         }>('/members/update-role', data),
         deleteMember: (data: TMemberDelete) => axiosQuery.delete(`/members/${data.workspace_id}/${data.user_id}`)
             .then(res => res.data),
-    }
+    },
+    project: {
+        create: (data: TCreateProjectRequest) => axiosQuery.post<{
+            data: TProject,
+            message: string,
+            status: string
+        }>(`/${data.workspace_id}/projects`, data)
+            .then(res => res.data),
+        list: (params: RequestParamsPagination, workspaceId: string, signal?: AbortSignal) => axiosQuery.get<{
+            data: ResponseProject
+        }>(`/${workspaceId}/projects`, {params, signal})
+            .then(res => res.data.data),
+        delete: (id: string, workspace_id: string) => axiosQuery.delete(`${workspace_id}/projects/${id}`)
+            .then(res => res.data),
+        getById: (id: string, workspace_id: string, signal?: AbortSignal) => axiosQuery.get<{
+            data: TProject
+        }>(`/${workspace_id}/projects/${id}`, {signal}),
+        update: (data: TUpdateProjectRequest) => axiosQuery.patch<{
+            data: TProject,
+            message: string,
+            status: string
+        }>(`/${data.workspace_id}/projects`, data)
+            .then(res => res.data),
+    },
 }

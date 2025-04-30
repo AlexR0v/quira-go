@@ -35,7 +35,19 @@ create table if not exists members
     user_id      BIGINT
         constraint FK_MEMBERS_ON_USER references users (id) ON DELETE CASCADE,
     workspace_id BIGINT
-        constraint FK_MEMBERS_ON_WORKSPACE references workspaces (id)  ON DELETE CASCADE,
+        constraint FK_MEMBERS_ON_WORKSPACE references workspaces (id) ON DELETE CASCADE,
     created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     role         VARCHAR(255) NOT NULL DEFAULT 'USER' check (role in ('USER', 'ADMIN'))
 );
+
+CREATE TABLE if not exists projects
+(
+    id           BIGSERIAL    NOT NULL PRIMARY KEY,
+    name         VARCHAR(255) NOT NULL,
+    workspace_id BIGINT,
+    image        TEXT         NOT NULL DEFAULT '',
+    created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE projects
+    ADD CONSTRAINT FK_PROJECTS_ON_WORKSPACE FOREIGN KEY (workspace_id) REFERENCES workspaces (id) ON DELETE CASCADE;

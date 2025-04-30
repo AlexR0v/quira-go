@@ -6,7 +6,7 @@ export const Navbar = () => {
             <div className="flex-col hidden lg:flex">
                 <h1 className="text-2xl font-semibold">Главная</h1>
                 <p className="text-muted-foreground">
-                    Отслеживай все свои проекты и задачи
+                    Отслеживай все свои Рабочие пространства и задачи
                 </p>
             </div>
             <UserButton/>

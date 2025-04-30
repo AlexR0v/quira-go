@@ -40,7 +40,7 @@ func (s *Service) Join(input *InputJoin, userId string) (*workspaces.WorkspaceRe
 			return nil, errJoin
 		}
 	} else {
-		return nil, app_err.NewError(app_err.UserExists, errors.New("пользователь уже состоит в данном проекте"))
+		return nil, app_err.NewError(app_err.UserExists, errors.New("пользователь уже состоит в данном рабочем пространстве"))
 	}
 	return workspaces.MapWorkspace(workspaceW), nil
 }

@@ -48,7 +48,7 @@ export const EditWorkspaceForm = ({onCancel, initialValues}: Props) => {
     const {mutateAsync, isPending} = useWorkSpaceUpdate()
     const {mutateAsync: deleteMutateAsync, isPending: deleteIsPending} = useWorkSpaceDelete()
     const [DeleteModal, confirmDelete] = useConfirm(
-        "Удалить проект?",
+        "Удалить рабочее пространство?",
         "Это действие нельзя будет отменить. Вы уверены?",
         "destructive",
     )
@@ -141,7 +141,7 @@ export const EditWorkspaceForm = ({onCancel, initialValues}: Props) => {
                                     name='name'
                                     render={({field}) => (
                                         <FormItem>
-                                            <FormLabel>Название проекта</FormLabel>
+                                            <FormLabel>Название рабочего пространства</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     placeholder='Введите название'
@@ -173,7 +173,7 @@ export const EditWorkspaceForm = ({onCancel, initialValues}: Props) => {
                                                     </Avatar>
                                                 )}
                                                 <div className="flex flex-col">
-                                                    <p className="text-sm">Иконка проекта</p>
+                                                    <p className="text-sm">Иконка рабочего пространства</p>
                                                     <p className="text-sm text-muted-foreground">
                                                         Формат: png, jpg, jpeg, svg. Максимальный размер - 5 МБ
                                                     </p>
@@ -237,7 +237,7 @@ export const EditWorkspaceForm = ({onCancel, initialValues}: Props) => {
                     <div className="flex flex-col">
                         <h3 className="font-bold">Внимание!</h3>
                         <p className="text-sm text-muted-foreground">
-                            Удаление проекта необратимо и приведет к удалению всех связанныхс ним данных.
+                            Удаление рабочего пространства необратимо и приведет к удалению всех связанныхс ним данных.
                         </p>
                         <div className="py-7">
                             <Separator/>
@@ -250,7 +250,7 @@ export const EditWorkspaceForm = ({onCancel, initialValues}: Props) => {
                             disabled={deleteIsPending || isPending}
                             onClick={handleDelete}
                         >
-                            Удалить проект
+                            Удалить Рабочее пространство
                         </Button>
                     </div>
                 </CardContent>
@@ -260,7 +260,7 @@ export const EditWorkspaceForm = ({onCancel, initialValues}: Props) => {
                     <div className="flex flex-col">
                         <h3 className="font-bold">Приглашение участников</h3>
                         <p className="text-sm text-muted-foreground">
-                            Используйте эту ссылку для приглашения участников в проект
+                            Используйте эту ссылку для приглашения участников в Рабочее пространство
                         </p>
                         <div className="mt-4">
                             <div className="flex items-center gap-x-2">

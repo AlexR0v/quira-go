@@ -28,10 +28,10 @@ export const JoinWorkspaceForm = ({initialValues}: Props) => {
         <Card className="w-full h-full border-none shadow-none">
             <CardHeader className="p-7">
                 <CardTitle className="text-xl font-bold">
-                    Присоединиться к проекту
+                    Присоединиться к Рабочему пространству
                 </CardTitle>
                 <CardDescription>
-                    Вы были приглашены в проект <strong>{initialValues.name}</strong>
+                    Вы были приглашены в Рабочее пространство <strong>{initialValues.name}</strong>
                 </CardDescription>
             </CardHeader>
             <div className="px-7">

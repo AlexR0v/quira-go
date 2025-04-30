@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import {useMemberDelete, useMemberUpdateRole} from "@/app/api/query-hooks/useMembers.tsx";
 import {Badge} from "@/components/ui/badge.tsx";
+import {useConfirm} from "@/hooks/use-confirm.tsx";
 
 interface Props {
     members: ResponseMembers
@@ -34,15 +35,23 @@ export const MembersList = ({members, currentUser, workspace}: Props) => {
     const {mutate: updateRole, isPending: isUpdateRolePending} = useMemberUpdateRole()
     const {mutate: deleteMember, isPending: isDeleteMemberPending} = useMemberDelete()
 
-    const onUpdateMember = (value: "ADMIN" | "USER" | "DELETE", userId: string) => {
-        if (value !== "DELETE") {
-            updateRole({
-                user_id: userId,
-                workspace_id: workspace.id.toString(),
-                role: value === "ADMIN" ? RoleMember.ADMIN : RoleMember.USER
-            })
-            return
-        }
+    const [DialogDelete, confirmDelete] = useConfirm(
+        "Участник будет удален",
+        "Вы уверены, что хотите удалить участника?",
+        "destructive"
+    )
+
+    const onUpdateMember = (value: "ADMIN" | "USER", userId: string) => {
+        updateRole({
+            user_id: userId,
+            workspace_id: workspace.id.toString(),
+            role: value === "ADMIN" ? RoleMember.ADMIN : RoleMember.USER
+        })
+    }
+
+    const onDeleteMember = async (userId: string) => {
+        const ok = await confirmDelete()
+        if(!ok) return
         deleteMember({
             workspace_id: workspace.id.toString(),
             user_id: userId
@@ -51,6 +60,7 @@ export const MembersList = ({members, currentUser, workspace}: Props) => {
 
     return (
         <Card className="w-full h-full border-none shadow-none">
+            <DialogDelete/>
             <CardHeader className="flex flex-row items-center gap-x-4 p-7 space-y-0">
                 <Button variant="secondary" size="sm" onClick={() => navigate(`/`)}
                         type="button">
@@ -100,7 +110,7 @@ export const MembersList = ({members, currentUser, workspace}: Props) => {
                                                         onClick={() => onUpdateMember("USER", member.id.toString())}
                                                         disabled={isUpdateRolePending || isDeleteMemberPending}
                                                     >
-                                                        Сделать участником
+                                                        Перевести в участники
                                                     </DropdownMenuItem>
                                             ) : (
                                                 <DropdownMenuItem
@@ -108,13 +118,13 @@ export const MembersList = ({members, currentUser, workspace}: Props) => {
                                                     onClick={() => onUpdateMember("ADMIN", member.id.toString())}
                                                     disabled={isUpdateRolePending || isDeleteMemberPending}
                                                 >
-                                                    Сделать админом
+                                                    Перевести в администраторы
                                                 </DropdownMenuItem>
                                             )}
                                             {member.role === "ADMIN" && isOneAdmin ? null : (
                                                 <DropdownMenuItem
-                                                    className="font-medium"
-                                                    onClick={() => onUpdateMember("DELETE", member.id.toString())}
+                                                    className="font-medium text-amber-700"
+                                                    onClick={() => onDeleteMember(member.id.toString())}
                                                     disabled={isUpdateRolePending || isDeleteMemberPending}
                                                 >
                                                     Удалить участника

@@ -1,23 +1,23 @@
-import {TUser} from "@/models/user.ts";
-import {TWorkspace} from "@/models/worksapce.ts";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx";
-import {Button} from "@/components/ui/button.tsx";
-import {ArrowLeftIcon, MoreVerticalIcon} from "lucide-react";
-import {useNavigate} from "react-router";
-import {Separator} from "@/components/ui/separator.tsx";
-import {Fragment} from "react";
-import {ResponseMembers, RoleMember} from "@/models/members.ts";
-import {MemberAvatar} from "@/features/members/components/member-avatar.tsx";
-import {cn} from "@/lib/utils.ts";
+import { TUser } from "@/models/user.ts";
+import { TWorkspace } from "@/models/worksapce.ts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { ArrowLeftIcon, MoreVerticalIcon } from "lucide-react";
+import { useNavigate } from "react-router";
+import { Separator } from "@/components/ui/separator.tsx";
+import { Fragment } from "react";
+import { ResponseMembers, RoleMember } from "@/models/members.ts";
+import { MemberAvatar } from "@/features/members/components/member-avatar.tsx";
+import { cn } from "@/lib/utils.ts";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
-import {useMemberDelete, useMemberUpdateRole} from "@/app/api/query-hooks/useMembers.tsx";
-import {Badge} from "@/components/ui/badge.tsx";
-import {useConfirm} from "@/hooks/use-confirm.tsx";
+import { useMemberDelete, useMemberUpdateRole } from "@/app/api/query-hooks/useMembers.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
+import { useConfirm } from "@/hooks/use-confirm.tsx";
 
 interface Props {
     members: ResponseMembers
@@ -85,10 +85,10 @@ export const MembersList = ({members, currentUser, workspace}: Props) => {
                                 fallbackClassName={cn("text-lg", member.id === currentUser.id && "bg-blue-300 text-white")}
                             />
                             <div className="flex flex-col">
-                                <p className="text-sm font-medium">
+                                <div className="text-sm font-medium">
                                     {member.first_name} {member.last_name}
                                     <Badge className="ml-2">{member.role}</Badge>
-                                </p>
+                                </div>
                                 <p className="text-xs text-muted-foreground">{member.email}</p>
                             </div>
                             <DropdownMenu>

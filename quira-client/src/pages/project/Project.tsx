@@ -1,9 +1,10 @@
-import {useNavigate, useParams} from "react-router";
-import {useGetProject} from "@/app/api/query-hooks/useProject.tsx";
-import {ProjectAvatar} from "@/features/project/components/project-avatar.tsx";
-import {Loader} from "@/components/ui/loader.tsx";
-import {Button} from "@/components/ui/button.tsx";
-import {PencilIcon} from "lucide-react";
+import { useNavigate, useParams } from "react-router";
+import { useGetProject } from "@/app/api/query-hooks/useProject.tsx";
+import { ProjectAvatar } from "@/features/project/components/project-avatar.tsx";
+import { Loader } from "@/components/ui/loader.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { PencilIcon } from "lucide-react";
+import { TaskViewSwitcher } from "@/features/task/components/task-view-switcher.tsx";
 
 const Project = () => {
 
@@ -39,6 +40,7 @@ const Project = () => {
                         </Button>
                     </div>
                 </div>
+                <TaskViewSwitcher/>
             </div>
         )
     }

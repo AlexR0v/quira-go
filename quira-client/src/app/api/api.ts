@@ -1,10 +1,11 @@
-import {axiosQuery} from '@/app/api/api-config.ts'
-import {TSignInRequest, TSignInResponse, TSignUpRequest, TSignUpResponse} from '@/models/auth.ts'
-import {TUser} from '@/models/user.ts'
-import {ResponseWorkspace, TCreateWorkspaceRequest, TUpdateWorkspaceRequest, TWorkspace} from "@/models/worksapce.ts";
-import {RequestParamsPagination} from "@/app/api/types.ts";
-import {ResponseMembers, TMemberDelete, TMemberJoin, TMemberUpdateRole} from "@/models/members.ts";
-import {ResponseProject, TCreateProjectRequest, TProject, TUpdateProjectRequest} from "@/models/project.ts";
+import { axiosQuery } from '@/app/api/api-config.ts'
+import { TSignInRequest, TSignInResponse, TSignUpRequest, TSignUpResponse } from '@/models/auth.ts'
+import { TUser } from '@/models/user.ts'
+import { ResponseWorkspace, TCreateWorkspaceRequest, TUpdateWorkspaceRequest, TWorkspace } from "@/models/worksapce.ts";
+import { RequestParamsPagination } from "@/app/api/types.ts";
+import { ResponseMembers, TMemberDelete, TMemberJoin, TMemberUpdateRole } from "@/models/members.ts";
+import { ResponseProject, TCreateProjectRequest, TProject, TUpdateProjectRequest } from "@/models/project.ts";
+import { RequestParamsTasks, ResponseTask, TCreateTaskRequest, TTask, TUpdateTaskRequest } from "@/models/task.ts";
 
 export const api = {
     auth: {
@@ -80,6 +81,29 @@ export const api = {
             message: string,
             status: string
         }>(`/${data.workspace_id}/projects`, data)
+            .then(res => res.data),
+    },
+    tasks: {
+        create: (data: TCreateTaskRequest) => axiosQuery.post<{
+            data: TTask,
+            message: string,
+            status: string
+        }>('/tasks', data)
+            .then(res => res.data),
+        list: (params: RequestParamsTasks, signal?: AbortSignal) => axiosQuery.get<{
+            data: ResponseTask
+        }>('/tasks', {params, signal})
+            .then(res => res.data.data),
+        delete: (id: string) => axiosQuery.delete(`/tasks/${id}`)
+            .then(res => res.data),
+        getById: (id: string, signal?: AbortSignal) => axiosQuery.get<{
+            data: TTask
+        }>(`/tasks/${id}`, {signal}),
+        update: (data: TUpdateTaskRequest) => axiosQuery.patch<{
+            data: TTask,
+            message: string,
+            status: string
+        }>('/tasks', data)
             .then(res => res.data),
     },
 }

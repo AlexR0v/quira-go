@@ -1,0 +1,41 @@
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { PlusIcon } from "lucide-react";
+import { Separator } from "@/components/ui/separator.tsx";
+
+export const TaskViewSwitcher = () => {
+    return (
+        <Tabs className="flex-1 w-full border rounded-lg">
+            <div className="h-full flex flex-col overflow-auto p-4">
+                <div className="flex flex-col gap-y-2 lg:flex-row justify-between items-center">
+                    <TabsList className="w-full lg:w-auto">
+                        <TabsTrigger className="h-8 w-full lg:w-auto" value="list">Список</TabsTrigger>
+                        <TabsTrigger className="h-8 w-full lg:w-auto" value="board">Доска</TabsTrigger>
+                        <TabsTrigger className="h-8 w-full lg:w-auto" value="calendar">Календарь</TabsTrigger>
+                    </TabsList>
+                    <Button
+                        size="sm"
+                        className="w-full lg:w-auto"
+                    >
+                        <PlusIcon className="size-4 mr-2"/>
+                        Новая задача
+                    </Button>
+                </div>
+                <Separator className="my-4"/>
+                <div>Filters</div>
+                <Separator className="my-4"/>
+                <>
+                    <TabsContent value="list">
+                        <div>list</div>
+                    </TabsContent>
+                    <TabsContent value="board">
+                        <div>board</div>
+                    </TabsContent>
+                    <TabsContent value="calendar">
+                        <div>calendar</div>
+                    </TabsContent>
+                </>
+            </div>
+        </Tabs>
+    )
+}

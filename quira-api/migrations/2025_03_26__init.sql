@@ -51,3 +51,24 @@ CREATE TABLE if not exists projects
 
 ALTER TABLE projects
     ADD CONSTRAINT FK_PROJECTS_ON_WORKSPACE FOREIGN KEY (workspace_id) REFERENCES workspaces (id) ON DELETE CASCADE;
+
+CREATE TYPE task_status_enum AS ENUM ('BACKLOG', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE');
+
+CREATE TABLE if not exists tasks
+(
+    id           BIGSERIAL    NOT NULL PRIMARY KEY,
+    name         VARCHAR(255) NOT NULL,
+    workspace_id BIGINT       NOT NULL,
+    project_id   BIGINT       NOT NULL,
+    assignee_id  BIGINT       NOT NULL,
+    description  TEXT                  DEFAULT '',
+    due_date     TIMESTAMP    NOT NULL,
+    status task_status_enum NOT NULL DEFAULT 'BACKLOG',
+    position     INT          NOT NULL,
+    created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE tasks
+    ADD CONSTRAINT FK_TASKS_ON_WORKSPACE FOREIGN KEY (workspace_id) REFERENCES workspaces (id) ON DELETE CASCADE,
+    ADD CONSTRAINT FK_TASKS_ON_PROJECT FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE,
+    ADD CONSTRAINT FK_TASKS_ON_ASSIGNEE FOREIGN KEY (assignee_id) REFERENCES users (id) ON DELETE CASCADE;

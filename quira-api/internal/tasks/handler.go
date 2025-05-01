@@ -2,10 +2,11 @@ package tasks
 
 import (
 	"errors"
-
+	"time"
+	
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
-
+	
 	apperr "quira-api/pkg/app-err"
 	appresponse "quira-api/pkg/app-response"
 )
@@ -35,10 +36,45 @@ func (h *Handler) GetAll(c *fiber.Ctx) error {
 	page := c.QueryInt("page", 1)
 	projectId := c.Query("projectId", "")
 	userId := c.Query("userId", "")
+	status := c.Query("status", "")
+	name := c.Query("name", "")
+	sortField := c.Query("sortField", "")
+	sortOrder := c.Query("sortOrder", "")
+	startDateStr := c.Query("startDate", "")
+	var startDate *time.Time
+	var err error
+	if startDateStr != "" {
+		parsedDate, err := time.Parse("2006-01-02 15:04:05", startDateStr)
+		if err != nil {
+			return apperr.FiberError(c, err)
+		}
+		startDate = &parsedDate
+	}
+	endDateStr := c.Query("endDate", "")
+	var endDate *time.Time
+	if endDateStr != "" {
+		parsedDate, err := time.Parse("2006-01-02 15:04:05", endDateStr)
+		if err != nil {
+			return apperr.FiberError(c, err)
+		}
+		endDate = &parsedDate
+	}
+	
 	if projectId == "" && userId == "" {
 		return apperr.FiberError(c, errors.New("projectId or userId is required"))
 	}
-	tasks, err := h.service.GetAll(size, (page-1)*size, projectId, userId)
+	tasks, err := h.service.GetAll(
+		size,
+		(page-1)*size,
+		projectId,
+		userId,
+		status,
+		name,
+		sortField,
+		sortOrder,
+		startDate,
+		endDate,
+	)
 	if err != nil {
 		return apperr.FiberError(c, err)
 	}

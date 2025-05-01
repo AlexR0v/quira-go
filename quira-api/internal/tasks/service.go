@@ -1,8 +1,10 @@
 package tasks
 
 import (
+	"time"
+	
 	"github.com/rs/zerolog"
-
+	
 	apperr "quira-api/pkg/app-err"
 )
 
@@ -18,8 +20,16 @@ func NewService(repo *Repository, logger *zerolog.Logger) *Service {
 	}
 }
 
-func (s *Service) GetAll(limit, offset int, projectId, userId string) (*ResponseList, error) {
-	tasks, count, err := s.repo.FindAll(limit, offset, projectId, userId)
+func (s *Service) GetAll(
+	limit, offset int,
+	projectId, userId, status, name, sortField, sortOrder string,
+	startDate, endDate *time.Time,
+) (*ResponseList, error) {
+	tasks, count, err := s.repo.FindAll(
+		limit, offset, projectId, userId,
+		status, name, sortField, sortOrder,
+		startDate, endDate,
+	)
 	if err != nil {
 		return nil, apperr.NewError(apperr.InternalServerError, err)
 	}
@@ -39,7 +49,7 @@ func (s *Service) GetById(id string) (*TaskResponse, error) {
 	if err != nil {
 		return nil, apperr.NewError(apperr.NotFound, err)
 	}
-
+	
 	return MapTask(wApp), nil
 }
 
@@ -48,7 +58,7 @@ func (s *Service) Create(createInput *CreateInput) (*TaskResponse, error) {
 	if err != nil {
 		return nil, apperr.NewError(apperr.BadRequest, err)
 	}
-
+	
 	return MapTask(createdTask), nil
 }
 
@@ -57,16 +67,16 @@ func (s *Service) DeleteById(id string) error {
 	if err != nil {
 		return apperr.NewError(apperr.NotFound, err)
 	}
-
+	
 	return nil
 }
 
 func (s *Service) Update(updateInput *UpdateInput) (*TaskResponse, error) {
-
+	
 	updateTask, err := s.repo.Update(updateInput)
 	if err != nil {
 		return nil, apperr.NewError(apperr.BadRequest, err)
 	}
-
+	
 	return MapTask(updateTask), nil
 }

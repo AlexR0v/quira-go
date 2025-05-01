@@ -24,7 +24,7 @@ type Task struct {
 	Position    int              `json:"position"`
 	Status      Status           `json:"status"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
-	ID          any              `json:"id"`
+	ID          int64            `json:"id"`
 }
 
 type TaskResponse struct {

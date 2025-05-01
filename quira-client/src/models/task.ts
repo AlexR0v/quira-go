@@ -51,4 +51,10 @@ export type RequestParamsTasks = {
   page?: number
   userId?: number
   projectId?: number
+  sortField?: string
+  sortOrder?: "asc" | "desc"
+  status?: TaskStatus
+  name?: string
+  startDate?: string
+  endDate?: string
 }

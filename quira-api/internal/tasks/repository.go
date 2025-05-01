@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
-
+	
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
@@ -24,40 +25,101 @@ func NewRepository(db *pgxpool.Pool, logger *zerolog.Logger) *Repository {
 	}
 }
 
-func (r *Repository) Count(projectId string) int {
-	query := "SELECT count(id) from tasks where project_id = $1"
+func (r *Repository) Count(taskIDs []string) int {
+	query := "SELECT count(id) from tasks where id = ANY ($1)"
 	var count int
-	err := r.db.QueryRow(context.Background(), query, projectId).Scan(&count)
+	err := r.db.QueryRow(context.Background(), query, taskIDs).Scan(&count)
 	if err != nil {
 		return 0
 	}
 	return count
 }
 
-func (r *Repository) FindAll(limit, offset int, projectId, userId string) ([]Task, int, error) {
+func (r *Repository) FindAll(
+	limit, offset int,
+	projectId, userId, status, name, sortField, sortOrder string,
+	startDate, endDate *time.Time,
+) ([]Task, int, error) {
 	var query string
 	var err error
-	var rows pgx.Rows
+	var args []interface{}
+	argCount := 1
+	
+	query = "SELECT * FROM tasks WHERE 1=1"
+	
 	if userId != "" {
-		query = "SELECT t.* FROM tasks t where t.assignee_id = $3 order by t.created_at desc limit $1 offset $2"
-		rows, err = r.db.Query(context.Background(), query, limit, offset, userId)
-	} else {
-		query = "SELECT t.* FROM tasks t where t.project_id = $3 order by t.created_at desc limit $1 offset $2"
-		rows, err = r.db.Query(context.Background(), query, limit, offset, projectId)
+		query += fmt.Sprintf(" AND assignee_id = $%d", argCount)
+		args = append(args, userId)
+		argCount++
 	}
+	
+	if projectId != "" {
+		query += fmt.Sprintf(" AND project_id = $%d", argCount)
+		args = append(args, projectId)
+		argCount++
+	}
+	
+	if status != "" {
+		query += fmt.Sprintf(" AND status = $%d", argCount)
+		args = append(args, status)
+		argCount++
+	}
+	
+	if name != "" {
+		query += fmt.Sprintf(" AND name ILIKE $%d", argCount)
+		args = append(args, "%"+name+"%")
+		argCount++
+	}
+	if startDate != nil {
+		query += fmt.Sprintf(" AND due_date >= $%d", argCount)
+		args = append(args, *startDate)
+		argCount++
+	}
+	
+	if endDate != nil {
+		query += fmt.Sprintf(" AND due_date <= $%d", argCount)
+		args = append(args, *endDate)
+		argCount++
+	}
+	
+	if sortField != "" {
+		query += fmt.Sprintf(" ORDER BY %s", sortField)
+		if sortOrder == "desc" {
+			query += " DESC"
+		} else {
+			query += " ASC"
+		}
+	} else {
+		query += " ORDER BY created_at DESC"
+	}
+	
+	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argCount, argCount+1)
+	args = append(args, limit, offset)
+	rows, err := r.db.Query(context.Background(), query, args...)
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
 		return nil, 0, err
 	}
 	defer rows.Close()
 	tasks, err := pgx.CollectRows(rows, pgx.RowToStructByName[Task])
-	count := r.Count(projectId)
-
+	
+	var taskIDs []string
+	for _, task := range tasks {
+		taskIDs = append(taskIDs, strconv.Itoa(int(task.ID)))
+	}
+	
+	var count int
+	if len(taskIDs) == 0 {
+		count = 0
+	} else {
+		count = r.Count(taskIDs)
+	}
+	
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
 		return nil, 0, err
 	}
-
+	
 	return tasks, count, nil
 }
 
@@ -99,18 +161,18 @@ func (r *Repository) Create(newTask *CreateInput) (Task, error) {
 		r.logger.Error().Msg(errPosition.Error())
 		return Task{}, errPosition
 	}
-
+	
 	query := `INSERT INTO tasks
     (name, workspace_id, project_id, assignee_id, description, due_date, status, position, created_at)
 	VALUES (@name, @workspace_id, @project_id, @assignee_id, @description, @due_date, @status, @position, @created_at) returning id`
-
+	
 	var position int64
 	if !highestPosition.Valid {
 		position = 1000
 	} else {
 		position = highestPosition.Int64 + 1000
 	}
-
+	
 	args := pgx.NamedArgs{
 		"name":         newTask.Name,
 		"workspace_id": newTask.WorkspaceID,
@@ -129,7 +191,7 @@ func (r *Repository) Create(newTask *CreateInput) (Task, error) {
 		r.logger.Error().Msg(err.Error())
 		return Task{}, err
 	}
-
+	
 	task, err := r.FindById(strconv.FormatInt(taskId, 10))
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
@@ -177,12 +239,12 @@ func (r *Repository) Update(taskUpdate *UpdateInput) (Task, error) {
 		r.logger.Error().Msg(err.Error())
 		return Task{}, err
 	}
-
+	
 	task, err := r.FindById(strconv.FormatInt(taskId, 10))
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
 		return Task{}, err
 	}
-
+	
 	return task, nil
 }

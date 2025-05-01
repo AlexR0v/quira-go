@@ -5,18 +5,31 @@ import { Separator } from "@/components/ui/separator.tsx";
 import { useTasksList } from "@/app/api/query-hooks/useTasks.tsx";
 import { useParams } from "react-router";
 import { useCreateTaskModal } from "@/features/task/hooks/useCreateTaskModal.tsx";
+import { useQueryState } from "nuqs";
 
 export const TaskViewSwitcher = () => {
 
-    const {projectId} = useParams()
-    const {open} = useCreateTaskModal()
+    const [view, setView] = useQueryState("tasks-view", {
+        defaultValue: "list"
+    })
+
+    const { projectId } = useParams()
+    const { open } = useCreateTaskModal()
 
     useTasksList({
-        projectId: projectId ? Number(projectId) : undefined
+        projectId: projectId ? Number(projectId) : undefined,
+        sortField: "position",
+        sortOrder: "desc",
+        //startDate: format(new Date(), 'yyyy-MM-dd') + ' 00:00:00',
+        //endDate: format(new Date().setMonth(12), 'yyyy-MM-dd') + ' 00:00:00',
     })
 
     return (
-        <Tabs className="flex-1 w-full border rounded-lg">
+        <Tabs
+            defaultValue={view}
+            onValueChange={setView}
+            className="flex-1 w-full border rounded-lg"
+        >
             <div className="h-full flex flex-col overflow-auto p-4">
                 <div className="flex flex-col gap-y-2 lg:flex-row justify-between items-center">
                     <TabsList className="w-full lg:w-auto">

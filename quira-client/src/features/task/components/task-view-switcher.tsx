@@ -2,8 +2,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.t
 import { Button } from "@/components/ui/button.tsx";
 import { PlusIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator.tsx";
+import { useTasksList } from "@/app/api/query-hooks/useTasks.tsx";
+import { useParams } from "react-router";
+import { useCreateTaskModal } from "@/features/task/hooks/useCreateTaskModal.tsx";
 
 export const TaskViewSwitcher = () => {
+
+    const {projectId} = useParams()
+    const {open} = useCreateTaskModal()
+
+    useTasksList({
+        projectId: projectId ? Number(projectId) : undefined
+    })
+
     return (
         <Tabs className="flex-1 w-full border rounded-lg">
             <div className="h-full flex flex-col overflow-auto p-4">
@@ -16,6 +27,7 @@ export const TaskViewSwitcher = () => {
                     <Button
                         size="sm"
                         className="w-full lg:w-auto"
+                        onClick={open}
                     >
                         <PlusIcon className="size-4 mr-2"/>
                         Новая задача

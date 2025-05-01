@@ -11,10 +11,9 @@ export type TCreateTaskRequest = {
   workspace_id: string
   project_id: string
   assignee_id: string
-  description: string
+  description?: string
   due_date: Date
   status: TaskStatus
-  position: number
 }
 
 export type TUpdateTaskRequest = {

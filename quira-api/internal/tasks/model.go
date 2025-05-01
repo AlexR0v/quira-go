@@ -52,7 +52,6 @@ type CreateInput struct {
 	AssigneeID  string           `json:"assignee_id"`
 	Description string           `json:"description"`
 	DueDate     pgtype.Timestamp `json:"due_date"`
-	Position    int              `json:"position"`
 	Status      Status           `json:"status"`
 }
 

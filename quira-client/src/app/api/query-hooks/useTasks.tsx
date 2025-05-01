@@ -33,6 +33,7 @@ export const useTasksList = (params: RequestParamsTasks) => {
   return useQuery({
     queryKey: ['tasks_list'],
     queryFn: () => api.tasks.list(params),
+    enabled: !!params.projectId || !!params.userId,
   })
 }
 

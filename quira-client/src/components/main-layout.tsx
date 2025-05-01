@@ -1,10 +1,11 @@
-import {useGetCurrentUser} from '@/app/api/query-hooks/useUser.tsx'
-import {useEffect, useState} from 'react'
-import {Navigate, Outlet, useLocation} from 'react-router'
-import {Sidebar} from "@/components/sidebar.tsx";
-import {Navbar} from "@/components/navbar.tsx";
-import {CreateWorkspaceModal} from "@/features/workspace/components/create-workspace-modal.tsx";
-import {CreateProjectModal} from "@/features/project/components/create-project-modal.tsx";
+import { useGetCurrentUser } from '@/app/api/query-hooks/useUser.tsx'
+import { useEffect, useState } from 'react'
+import { Navigate, Outlet, useLocation } from 'react-router'
+import { Sidebar } from "@/components/sidebar.tsx";
+import { Navbar } from "@/components/navbar.tsx";
+import { CreateWorkspaceModal } from "@/features/workspace/components/create-workspace-modal.tsx";
+import { CreateProjectModal } from "@/features/project/components/create-project-modal.tsx";
+import { CreateTaskModal } from "@/features/task/components/create-task-modal.tsx";
 
 const MainLayout = () => {
   
@@ -31,6 +32,7 @@ const MainLayout = () => {
           <div className="min-h-screen">
             <CreateWorkspaceModal/>
             <CreateProjectModal/>
+            <CreateTaskModal/>
             <div className="flex w-full h-full">
               <div className="fixed left-0 top-0 hidden lg:block lg:w-[264px] h-full overflow-auto">
                 <Sidebar/>

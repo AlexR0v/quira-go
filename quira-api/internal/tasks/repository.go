@@ -2,6 +2,8 @@ package tasks
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"strconv"
 	"time"
 
@@ -60,13 +62,20 @@ func (r *Repository) FindAll(limit, offset int, projectId, userId string) ([]Tas
 }
 
 func (r *Repository) FindById(id string) (Task, error) {
-	query := "SELECT t.* FROM tasks t WHERE id = $1"
-	row, err := r.db.Query(context.Background(), query, id)
-	if err != nil {
-		r.logger.Error().Msg(err.Error())
-		return Task{}, err
-	}
-	task, err := pgx.RowToStructByName[Task](row)
+	query := "SELECT t.name, t.workspace_id, t.project_id, t.assignee_id, t.description, t.due_date, t.position, t.status, t.created_at, t.id  FROM tasks t WHERE id = $1"
+	var task Task
+	err := r.db.QueryRow(context.Background(), query, id).Scan(
+		&task.Name,
+		&task.WorkspaceID,
+		&task.ProjectID,
+		&task.AssigneeID,
+		&task.Description,
+		&task.DueDate,
+		&task.Position,
+		&task.Status,
+		&task.CreatedAt,
+		&task.ID,
+	)
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
 		return Task{}, err
@@ -75,9 +84,33 @@ func (r *Repository) FindById(id string) (Task, error) {
 }
 
 func (r *Repository) Create(newTask *CreateInput) (Task, error) {
+	var highestPosition sql.NullInt64
+	queryHighestPosition := "SELECT max(position) FROM tasks WHERE project_id = $1 AND status = $2"
+	errPosition := r.db.QueryRow(
+		context.Background(),
+		queryHighestPosition,
+		newTask.ProjectID,
+		newTask.Status,
+	).Scan(&highestPosition)
+	if errPosition != nil {
+		if errors.Is(errPosition, sql.ErrNoRows) {
+			highestPosition = sql.NullInt64{Int64: 0, Valid: false}
+		}
+		r.logger.Error().Msg(errPosition.Error())
+		return Task{}, errPosition
+	}
+
 	query := `INSERT INTO tasks
     (name, workspace_id, project_id, assignee_id, description, due_date, status, position, created_at)
 	VALUES (@name, @workspace_id, @project_id, @assignee_id, @description, @due_date, @status, @position, @created_at) returning id`
+
+	var position int64
+	if !highestPosition.Valid {
+		position = 1000
+	} else {
+		position = highestPosition.Int64 + 1000
+	}
+
 	args := pgx.NamedArgs{
 		"name":         newTask.Name,
 		"workspace_id": newTask.WorkspaceID,
@@ -86,7 +119,7 @@ func (r *Repository) Create(newTask *CreateInput) (Task, error) {
 		"description":  newTask.Description,
 		"due_date":     newTask.DueDate,
 		"status":       newTask.Status,
-		"position":     newTask.Position,
+		"position":     position,
 		"created_at":   time.Now(),
 	}
 	row := r.db.QueryRow(context.Background(), query, args)

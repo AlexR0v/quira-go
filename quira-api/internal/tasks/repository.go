@@ -30,8 +30,8 @@ func buildFilters(
 	userId, projectId, status, name string,
 	dueDate *time.Time,
 ) (string, []interface{}) {
-	conditions := []string{}
-	args := []interface{}{}
+	var conditions []string
+	var args []interface{}
 	
 	if userId != "" {
 		conditions = append(conditions, fmt.Sprintf("assignee_id = $%d", len(args)+1))
@@ -119,20 +119,10 @@ func (r *Repository) FindAll(
 }
 
 func (r *Repository) FindById(id string) (Task, error) {
-	query := "SELECT t.name, t.workspace_id, t.project_id, t.assignee_id, t.description, t.due_date, t.position, t.status, t.created_at, t.id  FROM tasks t WHERE id = $1"
-	var task Task
-	err := r.db.QueryRow(context.Background(), query, id).Scan(
-		&task.Name,
-		&task.WorkspaceID,
-		&task.ProjectID,
-		&task.AssigneeID,
-		&task.Description,
-		&task.DueDate,
-		&task.Position,
-		&task.Status,
-		&task.CreatedAt,
-		&task.ID,
-	)
+	query := "SELECT t.*, u.first_name AS assignee_first_name, u.last_name AS assignee_last_name  FROM tasks t JOIN public.users u on u.id = t.assignee_id WHERE t.id = $1"
+	rows, err := r.db.Query(context.Background(), query, id)
+	defer rows.Close()
+	task, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[Task])
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
 		return Task{}, err

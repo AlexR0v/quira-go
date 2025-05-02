@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronsLeftIcon, ChevronsRightIcon } from "lucide-react";
 import * as React from "react";
 import { SIZE } from "@/features/task/components/task-view-switcher.tsx";
+import { Separator } from "@/components/ui/separator.tsx";
 
 interface DataTableProps {
     columns: ColumnDef<TTask>[]
@@ -82,42 +83,46 @@ export function DataTable({ columns, data, totalCount, setPage, page, sorting, s
                     )}
                 </TableBody>
             </Table>
-            {totalCount > SIZE && (
-                <div className="flex items-center justify-end space-x-2 py-4">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage(() => 1)}
-                        disabled={page === 1}
-                    >
-                        <ChevronsLeftIcon/>
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage(prev => prev - 1)}
-                        disabled={page === 1}
-                    >
-                        <ChevronLeftIcon/>
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage(prev => prev + 1)}
-                        disabled={totalCount <= page * SIZE}
-                    >
-                        <ChevronRightIcon/>
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage(() => Math.ceil(totalCount/SIZE))}
-                        disabled={totalCount <= page * SIZE}
-                    >
-                        <ChevronsRightIcon/>
-                    </Button>
-                </div>
-            )}
+            <Separator/>
+            <div className="flex items-center justify-between space-x-2 py-4 mx-2 h-16">
+                <span className="text-muted-foreground text-sm">Общее количество: {totalCount}</span>
+                {totalCount > SIZE && (
+                    <div className="flex items-center justify-end space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(() => 1)}
+                            disabled={page === 1}
+                        >
+                            <ChevronsLeftIcon/>
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(prev => prev - 1)}
+                            disabled={page === 1}
+                        >
+                            <ChevronLeftIcon/>
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(prev => prev + 1)}
+                            disabled={totalCount <= page * SIZE}
+                        >
+                            <ChevronRightIcon/>
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(() => Math.ceil(totalCount / SIZE))}
+                            disabled={totalCount <= page * SIZE}
+                        >
+                            <ChevronsRightIcon/>
+                        </Button>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 	"time"
-
+	
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
@@ -42,26 +42,20 @@ func (r *Repository) FindAll(limit, offset int, workspaceId string) ([]Project, 
 	defer rows.Close()
 	projects, err := pgx.CollectRows(rows, pgx.RowToStructByName[Project])
 	count := r.Count(workspaceId)
-
+	
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
 		return nil, 0, err
 	}
-
+	
 	return projects, count, nil
 }
 
 func (r *Repository) FindById(id string) (Project, error) {
-	query := "SELECT p.id, p.name, p.workspace_id, p.created_at, p.image FROM projects p WHERE id = $1"
-	row := r.db.QueryRow(context.Background(), query, id)
-	var project Project
-	err := row.Scan(
-		&project.ID,
-		&project.Name,
-		&project.WorkspaceID,
-		&project.CreatedAt,
-		&project.Image,
-	)
+	query := "SELECT p.* FROM projects p WHERE id = $1"
+	rows, err := r.db.Query(context.Background(), query, id)
+	defer rows.Close()
+	project, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[Project])
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
 		return Project{}, err
@@ -84,7 +78,7 @@ func (r *Repository) Create(newProject Project) (Project, error) {
 		r.logger.Error().Msg(err.Error())
 		return Project{}, err
 	}
-
+	
 	project, err := r.FindById(strconv.FormatInt(projectId, 10))
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
@@ -117,12 +111,12 @@ func (r *Repository) Update(ws *UpdateInput) (Project, error) {
 		r.logger.Error().Msg(err.Error())
 		return Project{}, err
 	}
-
+	
 	project, err := r.FindById(strconv.FormatInt(projectId, 10))
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
 		return Project{}, err
 	}
-
+	
 	return project, nil
 }

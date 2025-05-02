@@ -1,7 +1,7 @@
-import {StandaloneLayout} from "@/components/standalone-layout.tsx";
-import {EditWorkspaceForm} from "@/features/workspace/components/edit-workspace-form.tsx";
-import {Navigate, useNavigate, useParams} from "react-router";
-import {useGetWorkSpace} from "@/app/api/query-hooks/useWorkSpace.tsx";
+import { StandaloneLayout } from "@/components/standalone-layout.tsx";
+import { EditWorkspaceForm } from "@/features/workspace/components/edit-workspace-form.tsx";
+import { Navigate, useNavigate, useParams } from "react-router";
+import { useGetWorkSpace } from "@/app/api/query-hooks/useWorkSpace.tsx";
 
 const SettingsWorkspacePage = () => {
 
@@ -22,7 +22,7 @@ const SettingsWorkspacePage = () => {
         <div className="w-full">
             <StandaloneLayout>
                 <div className="max-w-xl">
-                    <EditWorkspaceForm onCancel={() => navigate("/")} initialValues={data.data.data}/>
+                    <EditWorkspaceForm onCancel={() => navigate(`/workspaces/${id}`)} initialValues={data.data.data}/>
                 </div>
             </StandaloneLayout>
         </div>

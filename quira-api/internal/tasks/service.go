@@ -23,12 +23,12 @@ func NewService(repo *Repository, logger *zerolog.Logger) *Service {
 func (s *Service) GetAll(
 	limit, offset int,
 	projectId, userId, status, name, sortField, sortOrder string,
-	startDate, endDate *time.Time,
+	dueDate *time.Time,
 ) (*ResponseList, error) {
 	tasks, count, err := s.repo.FindAll(
 		limit, offset, projectId, userId,
 		status, name, sortField, sortOrder,
-		startDate, endDate,
+		dueDate,
 	)
 	if err != nil {
 		return nil, apperr.NewError(apperr.InternalServerError, err)

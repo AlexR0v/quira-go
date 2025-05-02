@@ -6,13 +6,21 @@ export enum TaskStatus {
     BACKLOG = 'BACKLOG'
 }
 
+export enum TaskStatusRu {
+  TODO = 'К выполнению',
+  IN_PROGRESS = 'В процессе',
+  DONE = 'Выполнено',
+  IN_REVIEW = 'На ревью',
+  BACKLOG = 'Бэклог'
+}
+
 export type TCreateTaskRequest = {
   name: string;
   workspace_id: string
   project_id: string
   assignee_id: string
   description?: string
-  due_date: Date
+  due_date: string
   status: TaskStatus
 }
 
@@ -23,7 +31,7 @@ export type TUpdateTaskRequest = {
   project_id: string
   assignee_id: string
   description: string
-  due_date: Date
+  due_date: string
   status: TaskStatus
   position: number
 }
@@ -31,11 +39,14 @@ export type TUpdateTaskRequest = {
 export type TTask = {
   id: number
   name: string;
+  created_at: string,
   workspace_id: string
   project_id: string
   assignee_id: string
+  assignee_first_name: string
+  assignee_last_name: string
   description: string
-  due_date: Date
+  due_date: string
   status: TaskStatus
   position: number
 }
@@ -49,12 +60,11 @@ export type ResponseTask = {
 export type RequestParamsTasks = {
   size?: number
   page?: number
-  userId?: number
-  projectId?: number
+  userId?: string
+  projectId?: string
   sortField?: string
   sortOrder?: "asc" | "desc"
   status?: TaskStatus
   name?: string
-  startDate?: string
-  endDate?: string
+  dueDate?: string
 }

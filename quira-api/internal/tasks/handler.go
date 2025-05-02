@@ -1,7 +1,6 @@
 package tasks
 
 import (
-	"errors"
 	"time"
 	
 	"github.com/gofiber/fiber/v2"
@@ -40,29 +39,17 @@ func (h *Handler) GetAll(c *fiber.Ctx) error {
 	name := c.Query("name", "")
 	sortField := c.Query("sortField", "")
 	sortOrder := c.Query("sortOrder", "")
-	startDateStr := c.Query("startDate", "")
-	var startDate *time.Time
+	dueDateStr := c.Query("dueDate", "")
+	var dueDate *time.Time
 	var err error
-	if startDateStr != "" {
-		parsedDate, err := time.Parse("2006-01-02 15:04:05", startDateStr)
+	if dueDateStr != "" {
+		parsedDate, err := time.Parse("2006-01-02 15:04:05", dueDateStr)
 		if err != nil {
 			return apperr.FiberError(c, err)
 		}
-		startDate = &parsedDate
-	}
-	endDateStr := c.Query("endDate", "")
-	var endDate *time.Time
-	if endDateStr != "" {
-		parsedDate, err := time.Parse("2006-01-02 15:04:05", endDateStr)
-		if err != nil {
-			return apperr.FiberError(c, err)
-		}
-		endDate = &parsedDate
+		dueDate = &parsedDate
 	}
 	
-	if projectId == "" && userId == "" {
-		return apperr.FiberError(c, errors.New("projectId or userId is required"))
-	}
 	tasks, err := h.service.GetAll(
 		size,
 		(page-1)*size,
@@ -72,8 +59,7 @@ func (h *Handler) GetAll(c *fiber.Ctx) error {
 		name,
 		sortField,
 		sortOrder,
-		startDate,
-		endDate,
+		dueDate,
 	)
 	if err != nil {
 		return apperr.FiberError(c, err)

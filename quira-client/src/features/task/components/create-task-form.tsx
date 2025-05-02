@@ -24,10 +24,10 @@ interface Props {
 
 export const CreateTaskForm = ({ onCancel }: Props) => {
 
-    const { id } = useParams()
+    const { id, projectId } = useParams()
     const navigate = useNavigate()
 
-    const {data: members, isLoading: isLoadingMembers} = useMembersList({size: 2000, page: 1}, id)
+    const { data: members, isLoading: isLoadingMembers } = useMembersList({ size: 2000, page: 1 }, id)
     const { data: projects, isLoading: isLoadingProjects } = useProjectList({ size: 2000, page: 1 }, id)
 
     const { mutateAsync, isPending } = useTaskCreate()
@@ -36,11 +36,20 @@ export const CreateTaskForm = ({ onCancel }: Props) => {
         resolver: zodResolver(createTaskSchema),
         defaultValues: {
             name: '',
+            project_id: projectId,
         },
     })
 
     const onSubmit = (values: z.infer<typeof createTaskSchema>) => {
-        mutateAsync({ ...values, workspace_id: id ?? "" })
+        const dueDate = values.due_date
+        dueDate.setHours(0, 0, 0, 0)
+        const dateToSend = new Date(dueDate.getTime() - dueDate.getTimezoneOffset() * 60000).toISOString()
+
+        mutateAsync({
+            ...values,
+            workspace_id: id ?? "",
+            due_date: dateToSend,
+        })
             .then(() => {
                 navigate(`/workspaces/${id}/projects/${form.getValues("project_id")}`)
                 form.reset()
@@ -119,28 +128,30 @@ export const CreateTaskForm = ({ onCancel }: Props) => {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Исполнитель</FormLabel>
-                                            <Select
-                                                onValueChange={field.onChange}
-                                                disabled={isPending}
-                                                value={field.value}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Выберите исполнителя"/>
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <FormMessage/>
-                                                <SelectContent>
-                                                    {membersOptions?.map((member) => (
-                                                        <SelectItem key={member.value} value={member.value.toString()}>
-                                                            <div className="flex items-center gap-x-2">
-                                                                <MemberAvatar className="size-6" firstName={member.first_name} lastName={member.last_name}/>
-                                                                {member.first_name} {member.last_name}
-                                                            </div>
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            disabled={isPending}
+                                            value={field.value}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Выберите исполнителя"/>
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <FormMessage/>
+                                            <SelectContent>
+                                                {membersOptions?.map((member) => (
+                                                    <SelectItem key={member.value} value={member.value.toString()}>
+                                                        <div className="flex items-center gap-x-2">
+                                                            <MemberAvatar className="size-6"
+                                                                          firstName={member.first_name}
+                                                                          lastName={member.last_name}/>
+                                                            {member.first_name} {member.last_name}
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage/>
                                     </FormItem>
                                 )}
@@ -205,7 +216,8 @@ export const CreateTaskForm = ({ onCancel }: Props) => {
                                                 {projectsOptions?.map((priject) => (
                                                     <SelectItem key={priject.value} value={priject.value.toString()}>
                                                         <div className="flex items-center gap-x-2">
-                                                            <ProjectAvatar className="size-6" image={priject.image} name={priject.label}/>
+                                                            <ProjectAvatar className="size-6" image={priject.image}
+                                                                           name={priject.label}/>
                                                             {priject.label}
                                                         </div>
                                                     </SelectItem>

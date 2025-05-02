@@ -1,8 +1,16 @@
 import LoaderApp from 'react-ts-loaders'
+import { cn } from "@/lib/utils.ts";
 
-export const Loader = () => {
+interface Props {
+    fullscreen?: boolean
+}
+
+export const Loader = ({fullscreen}: Props) => {
   return (
-    <div className="flex items-center justify-center h-screen">
+    <div className={cn(
+        "flex items-center justify-center",
+        fullscreen && "h-screen"
+    )}>
       <LoaderApp
         type="roller"
         color="rgb(29, 78, 216)"

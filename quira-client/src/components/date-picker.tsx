@@ -11,9 +11,10 @@ interface Props {
     onChange: (value: Date) => void
     className?: string
     placeholder?: string
+    isFilter?: boolean
 }
 
-export const DatePicker = ({value, onChange, className, placeholder = "Выберите дату"}: Props) => {
+export const DatePicker = ({ value, onChange, className, placeholder = "Выберите дату" }: Props) => {
     return (
         <Popover>
             <PopoverTrigger asChild>
@@ -34,9 +35,8 @@ export const DatePicker = ({value, onChange, className, placeholder = "Выбе�
                 <Calendar
                     locale={ru}
                     mode="single"
-                    selected={value ?? new Date()}
-                    disabled={date => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                    onSelect={date => onChange(date as Date)}
+                    selected={value}
+                    onSelect={date => date && onChange(new Date(new Date(date).setHours(0, 0, 0, 0)) as Date)}
                     initialFocus
                 />
             </PopoverContent>

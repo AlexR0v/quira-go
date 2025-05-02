@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 	
 	"github.com/jackc/pgx/v5"
@@ -25,11 +26,52 @@ func NewRepository(db *pgxpool.Pool, logger *zerolog.Logger) *Repository {
 	}
 }
 
-func (r *Repository) Count(taskIDs []string) int {
-	query := "SELECT count(id) from tasks where id = ANY ($1)"
+func buildFilters(
+	userId, projectId, status, name string,
+	dueDate *time.Time,
+) (string, []interface{}) {
+	conditions := []string{}
+	args := []interface{}{}
+	
+	if userId != "" {
+		conditions = append(conditions, fmt.Sprintf("assignee_id = $%d", len(args)+1))
+		args = append(args, userId)
+	}
+	if projectId != "" {
+		conditions = append(conditions, fmt.Sprintf("project_id = $%d", len(args)+1))
+		args = append(args, projectId)
+	}
+	if status != "" {
+		conditions = append(conditions, fmt.Sprintf("status = $%d", len(args)+1))
+		args = append(args, status)
+	}
+	if name != "" {
+		conditions = append(conditions, fmt.Sprintf("name ILIKE $%d", len(args)+1))
+		args = append(args, "%"+name+"%")
+	}
+	if dueDate != nil {
+		conditions = append(conditions, fmt.Sprintf("due_date = $%d", len(args)+1))
+		args = append(args, *dueDate)
+	}
+	
+	if len(conditions) == 0 {
+		return "", args
+	}
+	
+	return " WHERE " + strings.Join(conditions, " AND "), args
+}
+
+func (r *Repository) Count(
+	userId, projectId, status, name string,
+	dueDate *time.Time,
+) int {
+	whereClause, args := buildFilters(userId, projectId, status, name, dueDate)
+	query := "SELECT count(id) FROM tasks" + whereClause
+	
 	var count int
-	err := r.db.QueryRow(context.Background(), query, taskIDs).Scan(&count)
+	err := r.db.QueryRow(context.Background(), query, args...).Scan(&count)
 	if err != nil {
+		r.logger.Error().Msg("Count error: " + err.Error())
 		return 0
 	}
 	return count
@@ -38,49 +80,12 @@ func (r *Repository) Count(taskIDs []string) int {
 func (r *Repository) FindAll(
 	limit, offset int,
 	projectId, userId, status, name, sortField, sortOrder string,
-	startDate, endDate *time.Time,
+	dueDate *time.Time,
 ) ([]Task, int, error) {
-	var query string
-	var err error
-	var args []interface{}
-	argCount := 1
+	whereClause, args := buildFilters(userId, projectId, status, name, dueDate)
+	argCount := len(args) + 1
 	
-	query = "SELECT * FROM tasks WHERE 1=1"
-	
-	if userId != "" {
-		query += fmt.Sprintf(" AND assignee_id = $%d", argCount)
-		args = append(args, userId)
-		argCount++
-	}
-	
-	if projectId != "" {
-		query += fmt.Sprintf(" AND project_id = $%d", argCount)
-		args = append(args, projectId)
-		argCount++
-	}
-	
-	if status != "" {
-		query += fmt.Sprintf(" AND status = $%d", argCount)
-		args = append(args, status)
-		argCount++
-	}
-	
-	if name != "" {
-		query += fmt.Sprintf(" AND name ILIKE $%d", argCount)
-		args = append(args, "%"+name+"%")
-		argCount++
-	}
-	if startDate != nil {
-		query += fmt.Sprintf(" AND due_date >= $%d", argCount)
-		args = append(args, *startDate)
-		argCount++
-	}
-	
-	if endDate != nil {
-		query += fmt.Sprintf(" AND due_date <= $%d", argCount)
-		args = append(args, *endDate)
-		argCount++
-	}
+	query := "SELECT tasks.*, u.first_name AS assignee_first_name, u.last_name AS assignee_last_name FROM tasks JOIN public.users u on u.id = tasks.assignee_id" + whereClause
 	
 	if sortField != "" {
 		query += fmt.Sprintf(" ORDER BY %s", sortField)
@@ -95,31 +100,21 @@ func (r *Repository) FindAll(
 	
 	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argCount, argCount+1)
 	args = append(args, limit, offset)
+	
 	rows, err := r.db.Query(context.Background(), query, args...)
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
 		return nil, 0, err
 	}
 	defer rows.Close()
+	
 	tasks, err := pgx.CollectRows(rows, pgx.RowToStructByName[Task])
-	
-	var taskIDs []string
-	for _, task := range tasks {
-		taskIDs = append(taskIDs, strconv.Itoa(int(task.ID)))
-	}
-	
-	var count int
-	if len(taskIDs) == 0 {
-		count = 0
-	} else {
-		count = r.Count(taskIDs)
-	}
-	
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
 		return nil, 0, err
 	}
 	
+	count := r.Count(userId, projectId, status, name, dueDate)
 	return tasks, count, nil
 }
 

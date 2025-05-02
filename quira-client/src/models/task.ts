@@ -25,12 +25,12 @@ export type TCreateTaskRequest = {
 }
 
 export type TUpdateTaskRequest = {
-  id: number
+  id: string
   name: string;
   workspace_id: string
   project_id: string
   assignee_id: string
-  description: string
+  description?: string
   due_date: string
   status: TaskStatus
   position: number

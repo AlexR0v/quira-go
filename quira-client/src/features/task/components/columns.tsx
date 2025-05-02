@@ -4,8 +4,9 @@ import { differenceInCalendarDays, format, formatDistanceToNow, set } from "date
 import { ru } from "date-fns/locale"
 import { cn } from "@/lib/utils.ts";
 import { Button } from "@/components/ui/button.tsx";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, MoreVertical } from "lucide-react";
 import { Badge } from "@/components/ui/badge.tsx";
+import { TasksActions } from "@/features/task/components/tasks-actions.tsx";
 
 export const columns: ColumnDef<TTask>[] = [
     {
@@ -131,4 +132,18 @@ export const columns: ColumnDef<TTask>[] = [
             )}>{formatDistanceToNow(dueAt18, { addSuffix: true, locale: ru })}</span>
         },
     },
+    {
+        id: "actions",
+        cell: info => {
+            const id = info.row.original.id
+            return <TasksActions id={id.toString()}>
+                <Button
+                    variant="ghost"
+                    className="size-8 p-0"
+                >
+                    <MoreVertical className="size-4" />
+                </Button>
+            </TasksActions>
+        }
+    }
 ]

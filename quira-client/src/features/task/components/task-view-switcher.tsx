@@ -15,6 +15,7 @@ import { useState } from "react";
 import { DataTable } from "@/features/task/components/data-table.tsx";
 import { columns } from "@/features/task/components/columns.tsx";
 import { SortingState } from "@tanstack/react-table";
+import { EditTaskModal } from "@/features/task/components/edit-task-modal.tsx";
 
 export const SIZE = 10
 
@@ -58,6 +59,7 @@ export const TaskViewSwitcher = () => {
             onValueChange={setView}
             className="flex-1 w-full border rounded-lg"
         >
+            <EditTaskModal tasks={tasks?.tasks ?? []}/>
             <div className="h-full flex flex-col overflow-auto p-4">
                 <div className="flex flex-col gap-y-2 lg:flex-row justify-between items-center">
                     <TabsList className="w-full lg:w-auto">

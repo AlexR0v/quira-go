@@ -29,9 +29,9 @@ export const useTaskCreate = () => {
   })
 }
 
-export const useTasksList = (params: RequestParamsTasks) => {
+export const useTasksList = (params: RequestParamsTasks, view: string) => {
   return useQuery({
-    queryKey: ['tasks_list', params],
+    queryKey: ['tasks_list', params, view],
     queryFn: () => api.tasks.list(params),
   })
 }

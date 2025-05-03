@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator.tsx";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import { createTaskSchema } from "@/features/task/schemas.ts";
 import { useTaskCreate } from "@/app/api/query-hooks/useTasks.tsx";
 import { useMembersList } from "@/app/api/query-hooks/useMembers.tsx";
@@ -26,7 +26,6 @@ interface Props {
 export const CreateTaskForm = ({ onCancel }: Props) => {
 
     const { id, projectId } = useParams()
-    const navigate = useNavigate()
 
     const { data: members, isLoading: isLoadingMembers } = useMembersList({ size: 2000, page: 1 }, id)
     const { data: projects, isLoading: isLoadingProjects } = useProjectList({ size: 2000, page: 1 }, id)
@@ -52,7 +51,7 @@ export const CreateTaskForm = ({ onCancel }: Props) => {
             due_date: dateToSend,
         })
             .then(() => {
-                navigate(`/workspaces/${id}/projects/${form.getValues("project_id")}`)
+                //navigate(`/workspaces/${id}/projects/${form.getValues("project_id")}${location.search}`)
                 form.reset()
                 onCancel?.()
             })

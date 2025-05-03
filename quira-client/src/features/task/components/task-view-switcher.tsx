@@ -2,7 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.t
 import { Button } from "@/components/ui/button.tsx";
 import { PlusIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator.tsx";
-import { useTasksList } from "@/app/api/query-hooks/useTasks.tsx";
+import { useTasksList, useTaskUpdate } from "@/app/api/query-hooks/useTasks.tsx";
 import { useParams } from "react-router";
 import { useCreateTaskModal } from "@/features/task/hooks/useCreateTaskModal.tsx";
 import { useQueryState } from "nuqs";
@@ -16,6 +16,8 @@ import { DataTable } from "@/features/task/components/data-table.tsx";
 import { columns } from "@/features/task/components/columns.tsx";
 import { SortingState } from "@tanstack/react-table";
 import { EditTaskModal } from "@/features/task/components/edit-task-modal.tsx";
+import { DataKanban } from "@/features/task/components/data-kanban.tsx";
+import { TTask, TUpdateTaskRequest } from "@/models/task.ts";
 
 export const SIZE = 10
 
@@ -24,6 +26,8 @@ export const TaskViewSwitcher = () => {
     const [view, setView] = useQueryState("tasks-view", {
         defaultValue: "list"
     })
+
+    const {mutate} = useTaskUpdate()
 
     const { projectId } = useParams()
     const { open } = useCreateTaskModal()
@@ -48,10 +52,24 @@ export const TaskViewSwitcher = () => {
         name: search && search?.length > 3 ? search : undefined,
         dueDate: dueDate ? format(new Date(dueDate), 'yyyy-MM-dd') + ' 00:00:00' : undefined,
         page,
-        size: SIZE,
+        size: view.includes("board") ? undefined : SIZE,
         sortOrder: sorting[0]?.id && sorting[0]?.desc ? "desc" : "asc",
         sortField: sorting[0]?.id
-    })
+    }, view)
+
+    const onKanbanChange = async (tasks: TTask[]) => {
+
+        try {
+            await Promise.all(
+                tasks.map((task) => {
+                    mutate(task as TUpdateTaskRequest)
+                })
+            )
+            console.log('Все задачи успешно обновлены')
+        } catch (error) {
+            console.error('Ошибка при обновлении задач:', error)
+        }
+    }
 
     return (
         <Tabs
@@ -95,7 +113,10 @@ export const TaskViewSwitcher = () => {
                             />
                         </TabsContent>
                         <TabsContent value="board">
-                            <div>board</div>
+                            <DataKanban
+                                data={tasks?.tasks ?? []}
+                                onChange={onKanbanChange}
+                            />
                         </TabsContent>
                         <TabsContent value="calendar">
                             <div>calendar</div>

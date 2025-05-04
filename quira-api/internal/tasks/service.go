@@ -30,14 +30,18 @@ func (s *Service) GetAll(params TaskListParams) (*ResponseList, error) {
 	res := &ResponseList{
 		Tasks:               response,
 		TotalCount:          repoRes.Total,
-		CountDiff:           repoRes.CountDiff,
+		TotalCountAll:       repoRes.TotalCountAll,
+		TotalCountAllDiff:   repoRes.TotalCountAllDiff,
 		CountAssigned:       repoRes.CountAssigned,
 		CountAssignedDiff:   repoRes.CountAssignedDiff,
 		CountIncomplete:     repoRes.CountIncomplete,
 		CountIncompleteDiff: repoRes.CountIncompleteDiff,
 		CountComplete:       repoRes.CountComplete,
 		CountCompleteDiff:   repoRes.CountCompleteDiff,
+		CountOverdue:        repoRes.CountOverdue,
+		CountOverdueDiff:    repoRes.CountOverdueDiff,
 	}
+	
 	return res, nil
 }
 

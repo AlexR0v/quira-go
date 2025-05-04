@@ -13,9 +13,9 @@ export const DataAnalytics = ({ data }: Props) => {
                 <div className="flex items-center flex-1">
                     <AnalyticCard
                         title="Всего задач"
-                        value={data.total_count}
-                        variant={data.count_difference > 0 ? "up" : "down"}
-                        increaseValue={data.count_difference}
+                        value={data.total_count_all}
+                        variant={data.total_count_all_difference > 0 ? "up" : "down"}
+                        increaseValue={data.total_count_all_difference}
                     />
                 </div>
                 <div className="flex items-center flex-1">

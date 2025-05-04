@@ -76,7 +76,8 @@ export type ResponseTask = {
     count_assigned_difference: number
     count_complete: number
     count_complete_difference: number
-    count_difference: number
+    total_count_all: number
+    total_count_all_difference: number
     count_incomplete: number
     count_incomplete_difference: number
     count_overdue_difference: number

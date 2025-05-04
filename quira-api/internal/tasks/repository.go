@@ -61,10 +61,10 @@ func buildFilters(
 	return " WHERE " + strings.Join(conditions, " AND "), args
 }
 
-func (r *Repository) CountThisMonth(projectId, userId string, incomplete string, overdue bool) int {
+func (r *Repository) CountThisMonth(projectId, userId string, incomplete string) int {
 	var count int
 	var err error
-	if userId != "" {
+	if incomplete == "byUser" {
 		query := `SELECT count(id) FROM tasks
                  WHERE project_id = $1 AND assignee_id = $2
                    AND created_at >= date_trunc('month', current_date)
@@ -76,7 +76,7 @@ func (r *Repository) CountThisMonth(projectId, userId string, incomplete string,
 		}
 		return count
 	}
-	if incomplete == "all" {
+	if incomplete == "thisMoth" {
 		query := `SELECT count(id) FROM tasks
                  WHERE project_id = $1
                    AND created_at >= date_trunc('month', current_date)
@@ -88,7 +88,7 @@ func (r *Repository) CountThisMonth(projectId, userId string, incomplete string,
 		}
 		return count
 	}
-	if incomplete == "exclude" {
+	if incomplete == "incomplete" {
 		query := `SELECT count(id) FROM tasks
                  WHERE project_id = $1 AND status != 'DONE'
                    AND created_at >= date_trunc('month', current_date)
@@ -100,7 +100,7 @@ func (r *Repository) CountThisMonth(projectId, userId string, incomplete string,
 		}
 		return count
 	}
-	if incomplete == "include" {
+	if incomplete == "complete" {
 		query := `SELECT count(id) FROM tasks
                  WHERE project_id = $1 AND status = 'DONE'
                    AND created_at >= date_trunc('month', current_date)
@@ -112,7 +112,7 @@ func (r *Repository) CountThisMonth(projectId, userId string, incomplete string,
 		}
 		return count
 	}
-	if incomplete == "select" {
+	if incomplete == "overdue" {
 		query := `SELECT count(id) FROM tasks
                  WHERE project_id = $1 AND status != 'DONE' AND due_date < current_date
                    AND created_at >= date_trunc('month', current_date)
@@ -127,10 +127,10 @@ func (r *Repository) CountThisMonth(projectId, userId string, incomplete string,
 	return count
 }
 
-func (r *Repository) CountLastMonth(projectId, userId string, incomplete string, overdue bool) int {
+func (r *Repository) CountLastMonth(projectId, userId string, incomplete string) int {
 	var count int
 	var err error
-	if userId != "" {
+	if incomplete == "byUser" {
 		query := `SELECT count(id) FROM tasks
                  WHERE project_id = $1 AND assignee_id = $2
                    AND created_at >= date_trunc('month', current_date) - interval '1 month'
@@ -142,7 +142,7 @@ func (r *Repository) CountLastMonth(projectId, userId string, incomplete string,
 		}
 		return count
 	}
-	if incomplete == "all" {
+	if incomplete == "thisMoth" {
 		query := `SELECT count(id) FROM tasks
                  WHERE project_id = $1
                    AND created_at >= date_trunc('month', current_date) - interval '1 month'
@@ -154,7 +154,7 @@ func (r *Repository) CountLastMonth(projectId, userId string, incomplete string,
 		}
 		return count
 	}
-	if incomplete == "exclude" {
+	if incomplete == "complete" {
 		query := `SELECT count(id) FROM tasks
                  WHERE project_id = $1 AND status = 'DONE'
                    AND created_at >= date_trunc('month', current_date) - interval '1 month'
@@ -166,7 +166,7 @@ func (r *Repository) CountLastMonth(projectId, userId string, incomplete string,
 		}
 		return count
 	}
-	if incomplete == "include" {
+	if incomplete == "incomplete" {
 		query := `SELECT count(id) FROM tasks
                  WHERE project_id = $1 AND status != 'DONE'
                    AND created_at >= date_trunc('month', current_date) - interval '1 month'
@@ -178,7 +178,7 @@ func (r *Repository) CountLastMonth(projectId, userId string, incomplete string,
 		}
 		return count
 	}
-	if incomplete == "select" {
+	if incomplete == "overdue" {
 		query := `SELECT count(id) FROM tasks
                  WHERE project_id = $1 AND status != 'DONE' AND due_date < current_date
                    AND created_at >= date_trunc('month', current_date) - interval '1 month'
@@ -248,21 +248,22 @@ func (r *Repository) FindAll(params TaskListParams) ResponseType {
 	}
 	
 	count := r.Count(params.userId, params.projectId, params.status, params.name, params.dueDate)
-	countThisMonthRow := r.CountThisMonth(params.projectId, "", "all", false)
-	countLastMonthRow := r.CountLastMonth(params.projectId, "", "all", false)
-	countThisMonthByUserRow := r.CountThisMonth(params.projectId, params.currentUserId, "all", false)
-	countLastMonthByUserRow := r.CountLastMonth(params.projectId, params.currentUserId, "all", false)
-	countThisMonthIncompleteRow := r.CountThisMonth(params.projectId, "", "include", false)
-	countLastMonthIncompleteRow := r.CountLastMonth(params.projectId, "", "include", false)
-	countThisMonthCompleteRow := r.CountThisMonth(params.projectId, "", "exclude", false)
-	countLastMonthCompleteRow := r.CountLastMonth(params.projectId, "", "exclude", false)
-	countOverdueThisMonthRow := r.CountThisMonth(params.projectId, "", "select", true)
-	counOverduetLastMonthRow := r.CountLastMonth(params.projectId, "", "select", true)
+	countThisMonthRow := r.CountThisMonth(params.projectId, "", "thisMoth")
+	countLastMonthRow := r.CountLastMonth(params.projectId, "", "thisMoth")
+	countThisMonthByUserRow := r.CountThisMonth(params.projectId, params.currentUserId, "byUser")
+	countLastMonthByUserRow := r.CountLastMonth(params.projectId, params.currentUserId, "byUser")
+	countThisMonthIncompleteRow := r.CountThisMonth(params.projectId, "", "incomplete")
+	countLastMonthIncompleteRow := r.CountLastMonth(params.projectId, "", "incomplete")
+	countThisMonthCompleteRow := r.CountThisMonth(params.projectId, "", "complete")
+	countLastMonthCompleteRow := r.CountLastMonth(params.projectId, "", "complete")
+	countOverdueThisMonthRow := r.CountThisMonth(params.projectId, "", "overdue")
+	counOverduetLastMonthRow := r.CountLastMonth(params.projectId, "", "overdue")
 	
 	return ResponseType{
 		Tasks:               tasksRow,
 		Total:               count,
-		CountDiff:           countThisMonthRow - countLastMonthRow,
+		TotalCountAll:       countThisMonthRow,
+		TotalCountAllDiff:   countThisMonthRow - countLastMonthRow,
 		CountAssigned:       countThisMonthByUserRow,
 		CountAssignedDiff:   countThisMonthByUserRow - countLastMonthByUserRow,
 		CountIncompleteDiff: countThisMonthIncompleteRow - countLastMonthIncompleteRow,

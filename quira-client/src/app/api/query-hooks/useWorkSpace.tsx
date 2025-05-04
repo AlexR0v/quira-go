@@ -1,10 +1,10 @@
-import {api} from '@/app/api/api.ts'
-import {useToast} from '@/hooks/use-toast.ts'
-import {TError} from '@/models/TError.ts'
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
-import {AxiosError} from 'axios'
-import {TCreateWorkspaceRequest, TUpdateWorkspaceRequest} from "@/models/worksapce.ts";
-import {RequestParamsPagination} from "@/app/api/types.ts";
+import { api } from '@/app/api/api.ts'
+import { useToast } from '@/hooks/use-toast.ts'
+import { TError } from '@/models/TError.ts'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
+import { TCreateWorkspaceRequest, TUpdateWorkspaceRequest } from "@/models/worksapce.ts";
+import { RequestParamsPagination } from "@/app/api/types.ts";
 
 export const useWorkSpaceCreate = () => {
   const { toast } = useToast()
@@ -46,6 +46,14 @@ export const useGetWorkSpace = (id?: string) => {
   })
 }
 
+export const useGetWorkSpaceAnalytics = (id?: string) => {
+  return useQuery({
+    queryKey: ['workspace-analytics', id],
+    queryFn: () => id ? api.workspace.getAnalytics(id) : null,
+    enabled: !!id,
+  })
+}
+
 export const useWorkSpaceDelete = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
@@ -83,6 +91,7 @@ export const useWorkSpaceUpdate = () => {
         description: "Рабочее пространство успешно обновлен",
       })
       queryClient.invalidateQueries({queryKey: ['workspace', variables.id]})
+      queryClient.invalidateQueries({queryKey: ['workspace-analytics', variables.id]})
       queryClient.invalidateQueries({queryKey: ['workspace_list']})
     },
     onError: (error: AxiosError<TError>) => {

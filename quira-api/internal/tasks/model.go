@@ -79,7 +79,8 @@ type TaskListParams struct {
 type ResponseType struct {
 	Tasks               []Task
 	Total               int
-	CountDiff           int
+	TotalCountAll       int
+	TotalCountAllDiff   int
 	CountAssigned       int
 	CountAssignedDiff   int
 	CountIncomplete     int
@@ -93,7 +94,8 @@ type ResponseType struct {
 
 type ResponseList struct {
 	TotalCount          int             `json:"total_count"`
-	CountDiff           int             `json:"count_difference"`
+	TotalCountAll       int             `json:"total_count_all"`
+	TotalCountAllDiff   int             `json:"total_count_all_difference"`
 	CountAssigned       int             `json:"count_assigned"`
 	CountAssignedDiff   int             `json:"count_assigned_difference"`
 	CountIncomplete     int             `json:"count_incomplete"`

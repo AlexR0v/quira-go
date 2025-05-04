@@ -10,7 +10,7 @@ type Workspace struct {
 	Image      string           `json:"image"`
 	CreatedAt  pgtype.Timestamp `json:"created_at"`
 	InviteCode string           `json:"invite_code"`
-	ID         any
+	ID         any              `json:"id"`
 }
 
 type WorkspaceResponse struct {
@@ -20,6 +20,19 @@ type WorkspaceResponse struct {
 	CreatedAt  pgtype.Timestamp `json:"created_at"`
 	InviteCode string           `json:"invite_code"`
 	ID         any              `json:"id"`
+}
+
+type ResponseAnalytics struct {
+	TotalCountAll       int `json:"total_count_all"`
+	TotalCountAllDiff   int `json:"total_count_all_difference"`
+	CountAssigned       int `json:"count_assigned"`
+	CountAssignedDiff   int `json:"count_assigned_difference"`
+	CountIncomplete     int `json:"count_incomplete"`
+	CountIncompleteDiff int `json:"count_incomplete_difference"`
+	CountComplete       int `json:"count_complete"`
+	CountCompleteDiff   int `json:"count_complete_difference"`
+	CountOverdue        int `json:"count_overdue"`
+	CountOverdueDiff    int `json:"count_overdue_difference"`
 }
 
 type ResponseList struct {

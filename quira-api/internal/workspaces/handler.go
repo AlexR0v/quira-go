@@ -2,10 +2,10 @@ package workspaces
 
 import (
 	"errors"
-
+	
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
-
+	
 	apperr "quira-api/pkg/app-err"
 	appresponse "quira-api/pkg/app-response"
 )
@@ -27,6 +27,7 @@ func NewHandler(router fiber.Router, log *zerolog.Logger, service *Service) {
 	api.Post("/", h.Create)
 	api.Patch("/", h.Update)
 	api.Get("/:id", h.GetById)
+	api.Get("/:id/analytics", h.Analytics)
 	api.Delete("/:id", h.DeleteById)
 }
 
@@ -88,4 +89,14 @@ func (h *Handler) Update(c *fiber.Ctx) error {
 		return apperr.FiberError(c, err)
 	}
 	return appresponse.FiberResponse(c, fiber.StatusOK, "Update Workspace", workspace)
+}
+
+func (h *Handler) Analytics(c *fiber.Ctx) error {
+	id := c.Params("id")
+	userId, ok := c.Locals("userId").(string)
+	if !ok {
+		return apperr.FiberError(c, apperr.NewError(apperr.BadRequest, errors.New("userId not found in context")))
+	}
+	analytics := h.service.GetAnalytics(id, userId)
+	return appresponse.FiberResponse(c, fiber.StatusOK, "analytics", analytics)
 }

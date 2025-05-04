@@ -6,7 +6,7 @@ import (
 	"errors"
 	"strconv"
 	"time"
-
+	
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
@@ -22,6 +22,139 @@ func NewRepository(db *pgxpool.Pool, logger *zerolog.Logger) *Repository {
 		db:     db,
 		logger: logger,
 	}
+}
+
+func (r *Repository) CountThisMonth(workspaceId, userId string, incomplete string) int {
+	var count int
+	var err error
+	if incomplete == "byUser" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE workspace_id = $1 AND assignee_id = $2
+                   AND created_at >= date_trunc('month', current_date)
+                   AND created_at < date_trunc('month', current_date) + interval '1 month'`
+		err = r.db.QueryRow(context.Background(), query, workspaceId, userId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "thisMoth" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE workspace_id = $1
+                   AND created_at >= date_trunc('month', current_date)
+                   AND created_at < date_trunc('month', current_date) + interval '1 month'`
+		err = r.db.QueryRow(context.Background(), query, workspaceId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "incomplete" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE workspace_id = $1 AND status != 'DONE'
+                   AND created_at >= date_trunc('month', current_date)
+                   AND created_at < date_trunc('month', current_date) + interval '1 month'`
+		err = r.db.QueryRow(context.Background(), query, workspaceId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "complete" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE workspace_id = $1 AND status = 'DONE'
+                   AND created_at >= date_trunc('month', current_date)
+                   AND created_at < date_trunc('month', current_date) + interval '1 month'`
+		err = r.db.QueryRow(context.Background(), query, workspaceId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "overdue" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE workspace_id = $1 AND status != 'DONE' AND due_date < current_date
+                   AND created_at >= date_trunc('month', current_date)
+                   AND created_at < date_trunc('month', current_date) + interval '1 month'`
+		err = r.db.QueryRow(context.Background(), query, workspaceId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	return count
+}
+
+func (r *Repository) CountLastMonth(workspaceId, userId string, incomplete string) int {
+	var count int
+	var err error
+	if incomplete == "byUser" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE workspace_id = $1 AND assignee_id = $2
+                   AND created_at >= date_trunc('month', current_date) - interval '1 month'
+                   AND created_at < date_trunc('month', current_date)`
+		err = r.db.QueryRow(context.Background(), query, workspaceId, userId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "thisMoth" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE workspace_id = $1
+                   AND created_at >= date_trunc('month', current_date) - interval '1 month'
+                   AND created_at < date_trunc('month', current_date)`
+		err = r.db.QueryRow(context.Background(), query, workspaceId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "complete" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE workspace_id = $1 AND status = 'DONE'
+                   AND created_at >= date_trunc('month', current_date) - interval '1 month'
+                   AND created_at < date_trunc('month', current_date)`
+		err = r.db.QueryRow(context.Background(), query, workspaceId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "incomplete" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE workspace_id = $1 AND status != 'DONE'
+                   AND created_at >= date_trunc('month', current_date) - interval '1 month'
+                   AND created_at < date_trunc('month', current_date)`
+		err = r.db.QueryRow(context.Background(), query, workspaceId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "overdue" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE workspace_id = $1 AND status != 'DONE' AND due_date < current_date
+                   AND created_at >= date_trunc('month', current_date) - interval '1 month'
+                   AND created_at < date_trunc('month', current_date)`
+		err = r.db.QueryRow(context.Background(), query, workspaceId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	
+	return count
 }
 
 func (r *Repository) CountWorkspaces(userId string) int {
@@ -44,12 +177,12 @@ func (r *Repository) FindAll(limit, offset int, userId string) ([]Workspace, int
 	defer rows.Close()
 	workspaces, err := pgx.CollectRows(rows, pgx.RowToStructByName[Workspace])
 	countWorkspaces := r.CountWorkspaces(userId)
-
+	
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
 		return nil, 0, err
 	}
-
+	
 	return workspaces, countWorkspaces, nil
 }
 
@@ -75,7 +208,7 @@ func (r *Repository) FindById(id string) (Workspace, error) {
 func (r *Repository) FindByMemberId(id string, userId string) (Workspace, error) {
 	query := "SELECT DISTINCT w.id, w.name, w.image, w.created_at, w.user_id, w.invite_code FROM workspaces w JOIN  public.members m ON w.id = m.workspace_id WHERE w.id = $1 and m.user_id = $2"
 	row := r.db.QueryRow(context.Background(), query, id, userId)
-
+	
 	var workspace Workspace
 	err := row.Scan(
 		&workspace.ID,
@@ -118,7 +251,7 @@ func (r *Repository) Create(newWorkspace Workspace) (Workspace, error) {
 		r.logger.Error().Msg(err.Error())
 		return Workspace{}, err
 	}
-
+	
 	queryMembers := "INSERT INTO members (user_id, role, workspace_id) VALUES (@user_id, @role, @workspace_id)"
 	argsMem := pgx.NamedArgs{
 		"user_id":      workspace.UserID,
@@ -160,12 +293,38 @@ func (r *Repository) Update(ws *UpdateInput) (Workspace, error) {
 		r.logger.Error().Msg(err.Error())
 		return Workspace{}, err
 	}
-
+	
 	workspace, err := r.FindById(strconv.FormatInt(workspaceId, 10))
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
 		return Workspace{}, err
 	}
-
+	
 	return workspace, nil
+}
+
+func (r *Repository) GetAnalytics(workspaceId, userId string) ResponseAnalytics {
+	
+	countThisMonthRow := r.CountThisMonth(workspaceId, "", "thisMoth")
+	countLastMonthRow := r.CountLastMonth(workspaceId, "", "thisMoth")
+	countThisMonthByUserRow := r.CountThisMonth(workspaceId, userId, "byUser")
+	countLastMonthByUserRow := r.CountLastMonth(workspaceId, userId, "byUser")
+	countThisMonthIncompleteRow := r.CountThisMonth(workspaceId, "", "incomplete")
+	countLastMonthIncompleteRow := r.CountLastMonth(workspaceId, "", "incomplete")
+	countThisMonthCompleteRow := r.CountThisMonth(workspaceId, "", "complete")
+	countLastMonthCompleteRow := r.CountLastMonth(workspaceId, "", "complete")
+	countOverdueThisMonthRow := r.CountThisMonth(workspaceId, "", "overdue")
+	counOverduetLastMonthRow := r.CountLastMonth(workspaceId, "", "overdue")
+	return ResponseAnalytics{
+		TotalCountAll:       countThisMonthRow,
+		TotalCountAllDiff:   countThisMonthRow - countLastMonthRow,
+		CountAssigned:       countThisMonthByUserRow,
+		CountAssignedDiff:   countThisMonthByUserRow - countLastMonthByUserRow,
+		CountIncompleteDiff: countThisMonthIncompleteRow - countLastMonthIncompleteRow,
+		CountIncomplete:     countThisMonthIncompleteRow,
+		CountCompleteDiff:   countThisMonthCompleteRow - countLastMonthCompleteRow,
+		CountComplete:       countThisMonthCompleteRow,
+		CountOverdue:        countOverdueThisMonthRow,
+		CountOverdueDiff:    countOverdueThisMonthRow - counOverduetLastMonthRow,
+	}
 }

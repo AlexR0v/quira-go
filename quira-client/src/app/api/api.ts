@@ -1,7 +1,13 @@
 import { axiosQuery } from '@/app/api/api-config.ts'
 import { TSignInRequest, TSignInResponse, TSignUpRequest, TSignUpResponse } from '@/models/auth.ts'
 import { TUser } from '@/models/user.ts'
-import { ResponseWorkspace, TCreateWorkspaceRequest, TUpdateWorkspaceRequest, TWorkspace } from "@/models/worksapce.ts";
+import {
+    ResponseWorkspace,
+    TCreateWorkspaceRequest,
+    TUpdateWorkspaceRequest,
+    TWorkspace,
+    TWorkspaceAnalytics
+} from "@/models/worksapce.ts";
 import { RequestParamsPagination } from "@/app/api/types.ts";
 import { ResponseMembers, TMemberDelete, TMemberJoin, TMemberUpdateRole } from "@/models/members.ts";
 import { ResponseProject, TCreateProjectRequest, TProject, TUpdateProjectRequest } from "@/models/project.ts";
@@ -42,6 +48,9 @@ export const api = {
             status: string
         }>('/workspaces', data)
             .then(res => res.data),
+        getAnalytics: (id: string, signal?: AbortSignal) => axiosQuery.get<{
+            data: TWorkspaceAnalytics
+        }>(`/workspaces/${id}/analytics`, {signal}),
     },
     members: {
         join: (data: TMemberJoin) => axiosQuery.post<{

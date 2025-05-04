@@ -4,18 +4,20 @@ import { EditTaskForm } from "@/features/task/components/edit-task-form.tsx";
 import { TTask } from "@/models/task.ts";
 
 interface Props {
-    tasks: TTask[]
+    tasks: TTask[] | TTask
 }
 
 export const EditTaskModal = ({tasks}:Props) => {
 
     const { taskId, close } = useEditTaskModal()
 
+    const initialValues = Array.isArray(tasks) ? tasks.find(task => task.id.toString() === taskId) : tasks
+
     return (
         <ResponsiveModal open={!!taskId} onOpenChange={close}>
             <EditTaskForm
                 onCancel={close}
-                initialValues={tasks.find(task => task.id.toString() === taskId)}
+                initialValues={initialValues}
             />
         </ResponsiveModal>
     )

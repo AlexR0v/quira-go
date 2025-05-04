@@ -17,7 +17,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MemberAvatar } from "@/features/members/components/member-avatar.tsx";
 import { TaskStatus, TTask } from "@/models/task.ts";
 import { ProjectAvatar } from "@/features/project/components/project-avatar.tsx";
-import { Textarea } from "@/components/ui/textarea.tsx";
 import { useEffect } from "react";
 
 interface Props {
@@ -45,7 +44,6 @@ export const EditTaskForm = ({ onCancel, initialValues }: Props) => {
     useEffect(() => {
         if (initialValues) {
             form.setValue("name", initialValues.name)
-            form.setValue("description", initialValues.description)
             form.setValue("status", initialValues.status)
             form.setValue("project_id", initialValues.project_id)
             form.setValue("assignee_id", initialValues.assignee_id)
@@ -112,23 +110,6 @@ export const EditTaskForm = ({ onCancel, initialValues }: Props) => {
                                         <FormControl>
                                             <Input
                                                 placeholder='Введите заголовок задачи'
-                                                disabled={isPending}
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage/>
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name='description'
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Описание задачи</FormLabel>
-                                        <FormControl>
-                                            <Textarea
-                                                placeholder='Введите описание задачи'
                                                 disabled={isPending}
                                                 {...field}
                                             />

@@ -61,6 +61,139 @@ func buildFilters(
 	return " WHERE " + strings.Join(conditions, " AND "), args
 }
 
+func (r *Repository) CountThisMonth(projectId, userId string, incomplete string, overdue bool) int {
+	var count int
+	var err error
+	if userId != "" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE project_id = $1 AND assignee_id = $2
+                   AND created_at >= date_trunc('month', current_date)
+                   AND created_at < date_trunc('month', current_date) + interval '1 month'`
+		err = r.db.QueryRow(context.Background(), query, projectId, userId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "all" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE project_id = $1
+                   AND created_at >= date_trunc('month', current_date)
+                   AND created_at < date_trunc('month', current_date) + interval '1 month'`
+		err = r.db.QueryRow(context.Background(), query, projectId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "exclude" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE project_id = $1 AND status != 'DONE'
+                   AND created_at >= date_trunc('month', current_date)
+                   AND created_at < date_trunc('month', current_date) + interval '1 month'`
+		err = r.db.QueryRow(context.Background(), query, projectId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "include" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE project_id = $1 AND status = 'DONE'
+                   AND created_at >= date_trunc('month', current_date)
+                   AND created_at < date_trunc('month', current_date) + interval '1 month'`
+		err = r.db.QueryRow(context.Background(), query, projectId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "select" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE project_id = $1 AND status != 'DONE' AND due_date < current_date
+                   AND created_at >= date_trunc('month', current_date)
+                   AND created_at < date_trunc('month', current_date) + interval '1 month'`
+		err = r.db.QueryRow(context.Background(), query, projectId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	return count
+}
+
+func (r *Repository) CountLastMonth(projectId, userId string, incomplete string, overdue bool) int {
+	var count int
+	var err error
+	if userId != "" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE project_id = $1 AND assignee_id = $2
+                   AND created_at >= date_trunc('month', current_date) - interval '1 month'
+                   AND created_at < date_trunc('month', current_date)`
+		err = r.db.QueryRow(context.Background(), query, projectId, userId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "all" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE project_id = $1
+                   AND created_at >= date_trunc('month', current_date) - interval '1 month'
+                   AND created_at < date_trunc('month', current_date)`
+		err = r.db.QueryRow(context.Background(), query, projectId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "exclude" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE project_id = $1 AND status = 'DONE'
+                   AND created_at >= date_trunc('month', current_date) - interval '1 month'
+                   AND created_at < date_trunc('month', current_date)`
+		err = r.db.QueryRow(context.Background(), query, projectId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "include" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE project_id = $1 AND status != 'DONE'
+                   AND created_at >= date_trunc('month', current_date) - interval '1 month'
+                   AND created_at < date_trunc('month', current_date)`
+		err = r.db.QueryRow(context.Background(), query, projectId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	if incomplete == "select" {
+		query := `SELECT count(id) FROM tasks
+                 WHERE project_id = $1 AND status != 'DONE' AND due_date < current_date
+                   AND created_at >= date_trunc('month', current_date) - interval '1 month'
+                   AND created_at < date_trunc('month', current_date)`
+		err = r.db.QueryRow(context.Background(), query, projectId).Scan(&count)
+		if err != nil {
+			r.logger.Error().Msg("Count error: " + err.Error())
+			return 0
+		}
+		return count
+	}
+	
+	return count
+}
+
 func (r *Repository) Count(
 	userId, projectId, status, name string,
 	dueDate *time.Time,
@@ -77,19 +210,15 @@ func (r *Repository) Count(
 	return count
 }
 
-func (r *Repository) FindAll(
-	limit, offset int,
-	projectId, userId, status, name, sortField, sortOrder string,
-	dueDate *time.Time,
-) ([]Task, int, error) {
-	whereClause, args := buildFilters(userId, projectId, status, name, dueDate)
+func (r *Repository) FindAll(params TaskListParams) ResponseType {
+	whereClause, args := buildFilters(params.userId, params.projectId, params.status, params.name, params.dueDate)
 	argCount := len(args) + 1
 	
 	query := "SELECT tasks.*, u.first_name AS assignee_first_name, u.last_name AS assignee_last_name FROM tasks JOIN public.users u on u.id = tasks.assignee_id" + whereClause
 	
-	if sortField != "" {
-		query += fmt.Sprintf(" ORDER BY %s", sortField)
-		if sortOrder == "desc" {
+	if params.sortField != "" {
+		query += fmt.Sprintf(" ORDER BY %s", params.sortField)
+		if params.sortOrder == "desc" {
 			query += " DESC"
 		} else {
 			query += " ASC"
@@ -99,38 +228,76 @@ func (r *Repository) FindAll(
 	}
 	
 	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argCount, argCount+1)
-	args = append(args, limit, offset)
+	args = append(args, params.limit, params.offset)
 	
 	rows, err := r.db.Query(context.Background(), query, args...)
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
-		return nil, 0, err
+		return ResponseType{
+			Err: err,
+		}
 	}
 	defer rows.Close()
 	
-	tasks, err := pgx.CollectRows(rows, pgx.RowToStructByName[Task])
+	tasksRow, err := pgx.CollectRows(rows, pgx.RowToStructByName[Task])
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
-		return nil, 0, err
+		return ResponseType{
+			Err: err,
+		}
 	}
 	
-	count := r.Count(userId, projectId, status, name, dueDate)
-	return tasks, count, nil
+	count := r.Count(params.userId, params.projectId, params.status, params.name, params.dueDate)
+	countThisMonthRow := r.CountThisMonth(params.projectId, "", "all", false)
+	countLastMonthRow := r.CountLastMonth(params.projectId, "", "all", false)
+	countThisMonthByUserRow := r.CountThisMonth(params.projectId, params.currentUserId, "all", false)
+	countLastMonthByUserRow := r.CountLastMonth(params.projectId, params.currentUserId, "all", false)
+	countThisMonthIncompleteRow := r.CountThisMonth(params.projectId, "", "include", false)
+	countLastMonthIncompleteRow := r.CountLastMonth(params.projectId, "", "include", false)
+	countThisMonthCompleteRow := r.CountThisMonth(params.projectId, "", "exclude", false)
+	countLastMonthCompleteRow := r.CountLastMonth(params.projectId, "", "exclude", false)
+	countOverdueThisMonthRow := r.CountThisMonth(params.projectId, "", "select", true)
+	counOverduetLastMonthRow := r.CountLastMonth(params.projectId, "", "select", true)
+	
+	return ResponseType{
+		Tasks:               tasksRow,
+		Total:               count,
+		CountDiff:           countThisMonthRow - countLastMonthRow,
+		CountAssigned:       countThisMonthByUserRow,
+		CountAssignedDiff:   countThisMonthByUserRow - countLastMonthByUserRow,
+		CountIncompleteDiff: countThisMonthIncompleteRow - countLastMonthIncompleteRow,
+		CountIncomplete:     countThisMonthIncompleteRow,
+		CountCompleteDiff:   countThisMonthCompleteRow - countLastMonthCompleteRow,
+		CountComplete:       countThisMonthCompleteRow,
+		CountOverdue:        countOverdueThisMonthRow,
+		CountOverdueDiff:    countOverdueThisMonthRow - counOverduetLastMonthRow,
+		Err:                 nil,
+	}
 }
 
-func (r *Repository) FindById(id string) (Task, error) {
-	query := "SELECT t.*, u.first_name AS assignee_first_name, u.last_name AS assignee_last_name  FROM tasks t JOIN public.users u on u.id = t.assignee_id WHERE t.id = $1"
+func (r *Repository) FindById(id string) (*TaskSingle, error) {
+	query := `SELECT
+    	t.*,
+    	u.first_name AS assignee_first_name,
+    	u.last_name AS assignee_last_name,
+    	p.name as project_name,
+    	w.name as workspace_name
+	FROM tasks t
+    JOIN public.users u on u.id = t.assignee_id
+	JOIN public.projects p on p.id = t.project_id
+	JOIN public.workspaces w on w.id = t.workspace_id
+	WHERE t.id = $1`
 	rows, err := r.db.Query(context.Background(), query, id)
 	defer rows.Close()
-	task, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[Task])
+	task, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[TaskSingle])
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
-		return Task{}, err
+		return nil, err
 	}
-	return task, nil
+	return &task, nil
 }
 
-func (r *Repository) Create(newTask *CreateInput) (Task, error) {
+func (r *Repository) Create(newTask *CreateInput) (*TaskSingle, error) {
 	var highestPosition sql.NullInt64
 	queryHighestPosition := "SELECT max(position) FROM tasks WHERE project_id = $1 AND status = $2"
 	errPosition := r.db.QueryRow(
@@ -144,7 +311,7 @@ func (r *Repository) Create(newTask *CreateInput) (Task, error) {
 			highestPosition = sql.NullInt64{Int64: 0, Valid: false}
 		}
 		r.logger.Error().Msg(errPosition.Error())
-		return Task{}, errPosition
+		return nil, errPosition
 	}
 	
 	query := `INSERT INTO tasks
@@ -174,13 +341,13 @@ func (r *Repository) Create(newTask *CreateInput) (Task, error) {
 	err := row.Scan(&taskId)
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
-		return Task{}, err
+		return nil, err
 	}
 	
 	task, err := r.FindById(strconv.FormatInt(taskId, 10))
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
-		return Task{}, err
+		return nil, err
 	}
 	return task, nil
 }
@@ -195,7 +362,7 @@ func (r *Repository) DeleteById(id string) error {
 	return nil
 }
 
-func (r *Repository) Update(taskUpdate *UpdateInput) (Task, error) {
+func (r *Repository) Update(taskUpdate *UpdateInput) (*TaskSingle, error) {
 	query := `UPDATE tasks SET
                  name = @name,
                  workspace_id = @workspace_id,
@@ -222,13 +389,13 @@ func (r *Repository) Update(taskUpdate *UpdateInput) (Task, error) {
 	err := row.Scan(&taskId)
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
-		return Task{}, err
+		return nil, err
 	}
 	
 	task, err := r.FindById(strconv.FormatInt(taskId, 10))
 	if err != nil {
 		r.logger.Error().Msg(err.Error())
-		return Task{}, err
+		return nil, err
 	}
 	
 	return task, nil

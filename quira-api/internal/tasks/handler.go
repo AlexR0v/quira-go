@@ -1,6 +1,7 @@
 package tasks
 
 import (
+	"errors"
 	"time"
 	
 	"github.com/gofiber/fiber/v2"
@@ -50,17 +51,29 @@ func (h *Handler) GetAll(c *fiber.Ctx) error {
 		dueDate = &parsedDate
 	}
 	
+	currentUserId, ok := c.Locals("userId").(string)
+	if !ok {
+		return apperr.FiberError(
+			c,
+			apperr.NewError(apperr.BadRequest, errors.New("current userId not found in context")),
+		)
+	}
+	
 	tasks, err := h.service.GetAll(
-		size,
-		(page-1)*size,
-		projectId,
-		userId,
-		status,
-		name,
-		sortField,
-		sortOrder,
-		dueDate,
+		TaskListParams{
+			limit:         size,
+			offset:        (page - 1) * size,
+			projectId:     projectId,
+			userId:        userId,
+			status:        status,
+			name:          name,
+			sortField:     sortField,
+			sortOrder:     sortOrder,
+			dueDate:       dueDate,
+			currentUserId: currentUserId,
+		},
 	)
+	
 	if err != nil {
 		return apperr.FiberError(c, err)
 	}

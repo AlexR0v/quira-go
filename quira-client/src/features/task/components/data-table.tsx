@@ -14,6 +14,7 @@ import { ChevronLeftIcon, ChevronRightIcon, ChevronsLeftIcon, ChevronsRightIcon 
 import * as React from "react";
 import { SIZE } from "@/features/task/components/task-view-switcher.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
+import { startOfMonth, subMonths } from "date-fns";
 
 interface DataTableProps {
     columns: ColumnDef<TTask>[]
@@ -24,6 +25,8 @@ interface DataTableProps {
     sorting: SortingState
     setSorting: React.Dispatch<React.SetStateAction<SortingState>>
 }
+
+console.log(startOfMonth(subMonths(new Date(), 1)));
 
 export function DataTable({ columns, data, totalCount, setPage, page, sorting, setSorting }: DataTableProps) {
 

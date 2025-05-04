@@ -72,3 +72,7 @@
 .hide-scrollbar::-webkit-scrollbar {
   display: none
 }
+
+.rbc-month-row{
+  @apply min-h-[180px]
+}

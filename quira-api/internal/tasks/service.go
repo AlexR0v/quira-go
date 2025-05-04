@@ -1,8 +1,6 @@
 package tasks
 
 import (
-	"time"
-	
 	"github.com/rs/zerolog"
 	
 	apperr "quira-api/pkg/app-err"
@@ -20,46 +18,45 @@ func NewService(repo *Repository, logger *zerolog.Logger) *Service {
 	}
 }
 
-func (s *Service) GetAll(
-	limit, offset int,
-	projectId, userId, status, name, sortField, sortOrder string,
-	dueDate *time.Time,
-) (*ResponseList, error) {
-	tasks, count, err := s.repo.FindAll(
-		limit, offset, projectId, userId,
-		status, name, sortField, sortOrder,
-		dueDate,
-	)
-	if err != nil {
-		return nil, apperr.NewError(apperr.InternalServerError, err)
+func (s *Service) GetAll(params TaskListParams) (*ResponseList, error) {
+	repoRes := s.repo.FindAll(params)
+	if repoRes.Err != nil {
+		return nil, apperr.NewError(apperr.InternalServerError, repoRes.Err)
 	}
 	var response []*TaskResponse
-	for _, task := range tasks {
+	for _, task := range repoRes.Tasks {
 		response = append(response, MapTask(task))
 	}
 	res := &ResponseList{
-		Tasks:      response,
-		TotalCount: count,
+		Tasks:               response,
+		TotalCount:          repoRes.Total,
+		CountDiff:           repoRes.CountDiff,
+		CountAssigned:       repoRes.CountAssigned,
+		CountAssignedDiff:   repoRes.CountAssignedDiff,
+		CountIncomplete:     repoRes.CountIncomplete,
+		CountIncompleteDiff: repoRes.CountIncompleteDiff,
+		CountComplete:       repoRes.CountComplete,
+		CountCompleteDiff:   repoRes.CountCompleteDiff,
 	}
 	return res, nil
 }
 
-func (s *Service) GetById(id string) (*TaskResponse, error) {
+func (s *Service) GetById(id string) (*TaskSingle, error) {
 	wApp, err := s.repo.FindById(id)
 	if err != nil {
 		return nil, apperr.NewError(apperr.NotFound, err)
 	}
 	
-	return MapTask(wApp), nil
+	return wApp, nil
 }
 
-func (s *Service) Create(createInput *CreateInput) (*TaskResponse, error) {
+func (s *Service) Create(createInput *CreateInput) (*TaskSingle, error) {
 	createdTask, err := s.repo.Create(createInput)
 	if err != nil {
 		return nil, apperr.NewError(apperr.BadRequest, err)
 	}
 	
-	return MapTask(createdTask), nil
+	return createdTask, nil
 }
 
 func (s *Service) DeleteById(id string) error {
@@ -71,12 +68,12 @@ func (s *Service) DeleteById(id string) error {
 	return nil
 }
 
-func (s *Service) Update(updateInput *UpdateInput) (*TaskResponse, error) {
+func (s *Service) Update(updateInput *UpdateInput) (*TaskSingle, error) {
 	
 	updateTask, err := s.repo.Update(updateInput)
 	if err != nil {
 		return nil, apperr.NewError(apperr.BadRequest, err)
 	}
 	
-	return MapTask(updateTask), nil
+	return updateTask, nil
 }

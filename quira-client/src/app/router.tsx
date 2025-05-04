@@ -1,5 +1,5 @@
-import {lazy} from 'react'
-import {Route, Routes} from 'react-router'
+import { lazy } from 'react'
+import { Route, Routes } from 'react-router'
 
 const Home = lazy(() => import('../pages/dashboard/dashboard-page.tsx'))
 const SignIn = lazy(() => import('@/pages/auth/sign-in/page.tsx'))
@@ -7,6 +7,7 @@ const SignUp = lazy(() => import('@/pages/auth/sign-up/page.tsx'))
 const AuthLayout = lazy(() => import('@/pages/auth/layout.tsx'))
 const MainLayout = lazy(() => import('@/components/main-layout.tsx'))
 const Tasks = lazy(() => import('@/pages/tasks/tasks-page.tsx'))
+const Task = lazy(() => import('@/pages/tasks/task-page.tsx'))
 const SettingsWorkspace = lazy(() => import('@/pages/settings/SettingsWorkspacePage.tsx'))
 const SettingsProject = lazy(() => import('@/pages/settings/SettingsProjectPage.tsx'))
 const Members = lazy(() => import('@/pages/memebers/MembersPage.tsx'))
@@ -25,6 +26,10 @@ export const Router = () => {
                 <Route
                     path='workspaces/:id/tasks'
                     element={<Tasks/>}
+                />
+                <Route
+                    path='workspaces/:id/projects/:projectId/tasks/:taskId'
+                    element={<Task/>}
                 />
                 <Route
                     path='workspaces/:id'

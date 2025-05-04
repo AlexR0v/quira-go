@@ -22,6 +22,14 @@ export enum TaskStatusColor {
     BACKLOG = 'text-gray-400',
 }
 
+export enum TaskStatusBorderColor {
+    TODO = 'border-l-blue-600',
+    IN_PROGRESS = 'border-l-purple-600',
+    DONE = 'border-l-green-600',
+    IN_REVIEW = 'border-l-yellow-600',
+    BACKLOG = 'border-l-gray-400',
+}
+
 export type TCreateTaskRequest = {
     name: string;
     workspace_id: string
@@ -49,7 +57,9 @@ export type TTask = {
     name: string;
     created_at: string,
     workspace_id: string
+    workspace_name: string
     project_id: string
+    project_name: string
     assignee_id: string
     assignee_first_name: string
     assignee_last_name: string
@@ -62,6 +72,15 @@ export type TTask = {
 export type ResponseTask = {
     tasks: TTask[]
     total_count: number
+    count_assigned: number
+    count_assigned_difference: number
+    count_complete: number
+    count_complete_difference: number
+    count_difference: number
+    count_incomplete: number
+    count_incomplete_difference: number
+    count_overdue_difference: number
+    count_overdue: number
 }
 
 

@@ -16,7 +16,11 @@ import { DatePicker } from "@/components/date-picker.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
 
-export const Filters = () => {
+interface Props {
+    userIdProps?: string
+}
+
+export const Filters = ({ userIdProps }: Props) => {
     const { id } = useParams()
 
     const { data: members, isLoading: isLoadingMembers } = useMembersList({ size: 2000, page: 1 }, id)
@@ -81,26 +85,28 @@ export const Filters = () => {
                     </SelectItem>
                 </SelectContent>
             </Select>
-            <Select
-                defaultValue={userId ?? undefined}
-                onValueChange={onUserChange}
-            >
-                <SelectTrigger className="w-full lg:w-auto h-8">
-                    <div className="flex items-center pr-2">
-                        <ListChecksIcon className="size-4 mr-2"/>
-                        <SelectValue placeholder="Все участники"/>
-                    </div>
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">Все участники</SelectItem>
-                    <SelectSeparator/>
-                    {membersOptions?.map((member) => (
-                        <SelectItem key={member.value} value={member.value.toString()}>
-                            {member.first_name} {member.last_name}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+            {!userIdProps && (
+                <Select
+                    defaultValue={userId ?? undefined}
+                    onValueChange={onUserChange}
+                >
+                    <SelectTrigger className="w-full lg:w-auto h-8">
+                        <div className="flex items-center pr-2">
+                            <ListChecksIcon className="size-4 mr-2"/>
+                            <SelectValue placeholder="Все участники"/>
+                        </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Все участники</SelectItem>
+                        <SelectSeparator/>
+                        {membersOptions?.map((member) => (
+                            <SelectItem key={member.value} value={member.value.toString()}>
+                                {member.first_name} {member.last_name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            )}
             <DatePicker
                 isFilter
                 className="w-full lg:w-auto h-8"
